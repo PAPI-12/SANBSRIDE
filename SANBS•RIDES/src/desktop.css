@@ -1,0 +1,76 @@
+/* ==========================================================================
+   SANBS RIDE — desktop layouts for the donor and driver apps
+
+   Research basis
+   --------------
+   NN/G, "Mobile First Is NOT Mobile Only": porting a phone UI unchanged to a
+   desktop (hidden nav, bottom bars, single narrow column) measurably degrades
+   the desktop experience. So these apps are not stretched — they are
+   *restructured*: navigation moves to a persistent side rail, and content
+   composes into two columns that use the available width.
+
+   Dashboard/split-view research: a persistent list beside a detail pane suits
+   queue work — the donor sees their ride beside the journey, the driver sees
+   their trip list beside the active trip, with no back-and-forth.
+
+   Layout grid: 8px base unit, 12-column content grid above 1200px.
+   ========================================================================== */
+
+/* The rail is mobile-hidden by default; it only exists for desktop. */
+.app-rail { display: none; }
+
+/* --------------------------------------------------------------------------
+   Tablet and up: give the app a real desktop chassis
+   -------------------------------------------------------------------------- */
+/* Donor and driver are mobile-first: a phone screen at every size.
+   The phone frame is styled in mobile.css (.mobile-experience-wrap). */
+
+/* --------------------------------------------------------------------------
+   Wide desktop: 12-column grid, comfortable measure
+   -------------------------------------------------------------------------- */
+@media (min-width: 1200px) {
+  .app-surface .app-rail { flex-basis: 248px; padding: 26px 16px; }
+  .app-surface .donor-home-page,
+  .app-surface .donor-journey-page {
+    padding: 40px 56px 64px;
+    max-width: 1320px;
+  }
+  .app-surface .donor-greeting-row h1 { font-size: 46px; }
+  .app-surface .donor-hero-appointment strong { font-size: 40px; }
+  .app-surface .driver-today-page,
+  .app-surface .driver-trips-page,
+  .app-surface .driver-reports-page,
+  .app-surface .driver-profile-page {
+    padding: 40px 56px 64px;
+    max-width: 1320px;
+  }
+}
+
+/* Very wide: keep line lengths sane rather than stretching forever. */
+@media (min-width: 1600px) {
+  .app-surface .donor-home-page,
+  .app-surface .donor-journey-page,
+  .app-surface .driver-today-page,
+  .app-surface .driver-trips-page,
+  .app-surface .driver-reports-page,
+  .app-surface .driver-profile-page {
+    max-width: 1440px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Booking flow: centred card on desktop instead of a full-height phone screen
+   -------------------------------------------------------------------------- */
+@media (min-width: 900px) {
+  .app-surface .request-flow-screen {
+    max-width: 720px;
+    margin: 0 auto;
+    width: 100%;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+    background: var(--paper);
+  }
+  .app-surface .request-flow-content { padding: 32px 36px 40px; }
+  .app-surface .request-flow-footer { padding-left: 36px; padding-right: 36px; }
+  .app-surface .request-flow-footer .button-wide { max-width: 360px; }
+}
