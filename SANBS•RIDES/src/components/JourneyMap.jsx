@@ -1,6 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { Compass, LocateFixed } from 'lucide-react';
-import 'leaflet/dist/leaflet.css';
 import { friendlyServiceMessage } from '../services/http.js';
 import { getJourneyMapState } from '../domain.js';
 import { getBookingRoute } from '../services/routing.js';
@@ -267,7 +266,7 @@ export default function JourneyMap({
             if (navigationStyle) {
               keepDriverInFocus(point);
             } else {
-              mapInstance.panTo(point, { animate: true });
+              mapInstance.panTo(point, { animate: true, duration: 0.2, easeLinearity: 1 });
             }
           }
         };
