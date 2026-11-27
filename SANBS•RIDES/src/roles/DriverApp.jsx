@@ -52,6 +52,8 @@ function greetingFor(date) {
 export function DriverApp({ state, actions }) {
   usePhoneScale();
   const [tab, setTab] = useState('today');
+  const [navigationOpen, setNavigationOpen] = useState(false);
+  const [navigationStarted, setNavigationStarted] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
   const [identityOpen, setIdentityOpen] = useState(false);
   const driver = getDriver(state, state.selectedDriverId) || state.drivers.find((item) => !item.isProvider);
@@ -61,6 +63,12 @@ export function DriverApp({ state, actions }) {
   const availability = driver ? getDriverAvailability(state, driver.id) : 'offline';
   const completedTasks = getDriverCompletedTasks(state, driver?.id);
   const locationWatchRef = useRef(null);
+  const activeTaskKey = currentTask ? `${driver?.id}:${currentTask.booking.id}:${currentTask.legName}` : '';
+
+  useEffect(() => {
+    setNavigationStarted(Boolean(currentTask?.leg?.status === 'donor_picked_up' && currentTask?.leg?.navigationMode));
+    if (!currentTask) setNavigationOpen(false);
+  }, [activeTaskKey, currentTask?.leg?.status, currentTask?.leg?.navigationMode]);
 
   useEffect(() => {
     if (!driver || availability === 'offline' || !navigator.geolocation) return undefined;
@@ -125,6 +133,10 @@ export function DriverApp({ state, actions }) {
             completedCount={completedTasks.length}
             availability={availability}
             actions={actions}
+            navigationOpen={navigationOpen}
+            setNavigationOpen={setNavigationOpen}
+            navigationStarted={navigationStarted}
+            setNavigationStarted={setNavigationStarted}
             onReport={() => setIssueOpen(true)}
           />}
           {tab === 'trips' && <DriverTrips
@@ -141,21 +153,25 @@ export function DriverApp({ state, actions }) {
             availability={availability}
             tasks={tasks}
             onOpenToday={() => setTab('today')}
+            onResumeNavigation={() => {
+              setTab('today');
+              setNavigationOpen(true);
+            }}
             onSupport={openSupport}
           />}
         </div>
         <nav className="app-rail app-rail-driver" aria-label="Driver navigation">
           <span className="app-rail-label">Driver</span>
           <button className={tab === 'today' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('today')} aria-current={tab === 'today' ? 'page' : undefined}><Navigation size={18} /><span>Today</span></button>
-          <button className={tab === 'trips' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('trips')} aria-current={tab === 'trips' ? 'page' : undefined}><Truck size={18} /><span>Trips</span></button>
-          <button className={tab === 'reports' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('reports')} aria-current={tab === 'reports' ? 'page' : undefined}><BarChart3 size={18} /><span>Reports</span></button>
-          <button className={tab === 'profile' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('profile')} aria-current={tab === 'profile' ? 'page' : undefined}><UserRound size={18} /><span>Profile</span></button>
+          <button className={tab === 'trips' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => { setNavigationOpen(false); setTab('trips'); }} aria-current={tab === 'trips' ? 'page' : undefined}><Truck size={18} /><span>Trips</span></button>
+          <button className={tab === 'reports' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => { setNavigationOpen(false); setTab('reports'); }} aria-current={tab === 'reports' ? 'page' : undefined}><BarChart3 size={18} /><span>Reports</span></button>
+          <button className={tab === 'profile' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => { setNavigationOpen(false); setTab('profile'); }} aria-current={tab === 'profile' ? 'page' : undefined}><UserRound size={18} /><span>Profile</span></button>
         </nav>
         <nav className="mobile-bottom-nav driver-bottom-nav driver-circular-dock" aria-label="Driver app navigation">
           <button className={`dock-circle-btn${tab === 'today' ? ' active' : ''}`} type="button" onClick={() => setTab('today')} aria-label="Today" aria-current={tab === 'today' ? 'page' : undefined} title="Today"><Navigation size={20} strokeWidth={tab === 'today' ? 2.3 : 1.9} /></button>
-          <button className={`dock-circle-btn${tab === 'trips' ? ' active' : ''}`} type="button" onClick={() => setTab('trips')} aria-label="Trips" aria-current={tab === 'trips' ? 'page' : undefined} title="Trips"><Truck size={20} strokeWidth={tab === 'trips' ? 2.3 : 1.9} /></button>
-          <button className={`dock-circle-btn${tab === 'reports' ? ' active' : ''}`} type="button" onClick={() => setTab('reports')} aria-label="Reports" aria-current={tab === 'reports' ? 'page' : undefined} title="Reports"><BarChart3 size={20} strokeWidth={tab === 'reports' ? 2.3 : 1.9} /></button>
-          <button className={`dock-circle-btn${tab === 'profile' ? ' active' : ''}`} type="button" onClick={() => setTab('profile')} aria-label="Profile" aria-current={tab === 'profile' ? 'page' : undefined} title="Profile"><UserRound size={20} strokeWidth={tab === 'profile' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'trips' ? ' active' : ''}`} type="button" onClick={() => { setNavigationOpen(false); setTab('trips'); }} aria-label="Trips" aria-current={tab === 'trips' ? 'page' : undefined} title="Trips"><Truck size={20} strokeWidth={tab === 'trips' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'reports' ? ' active' : ''}`} type="button" onClick={() => { setNavigationOpen(false); setTab('reports'); }} aria-label="Reports" aria-current={tab === 'reports' ? 'page' : undefined} title="Reports"><BarChart3 size={20} strokeWidth={tab === 'reports' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'profile' ? ' active' : ''}`} type="button" onClick={() => { setNavigationOpen(false); setTab('profile'); }} aria-label="Profile" aria-current={tab === 'profile' ? 'page' : undefined} title="Profile"><UserRound size={20} strokeWidth={tab === 'profile' ? 2.3 : 1.9} /></button>
         </nav>
       </section>
       {issueOpen && currentTask && <ReportIssueModal
@@ -196,9 +212,20 @@ function getDriverCompletedTasks(state, driverId) {
   return tasks;
 }
 
-function DriverToday({ driver, state, task, taskCount, completedCount, availability, actions, onReport }) {
-  const [navigationOpen, setNavigationOpen] = useState(false);
-  const [navigationStarted, setNavigationStarted] = useState(false);
+function DriverToday({
+  driver,
+  state,
+  task,
+  taskCount,
+  completedCount,
+  availability,
+  actions,
+  navigationOpen,
+  setNavigationOpen,
+  navigationStarted,
+  setNavigationStarted,
+  onReport,
+}) {
   const [navigationActionPending, setNavigationActionPending] = useState(false);
   const navigationActionLock = useRef(false);
   const leg = task?.leg;
@@ -226,6 +253,7 @@ function DriverToday({ driver, state, task, taskCount, completedCount, availabil
   const needsOfferResponse = tripStatus === 'driver_assigned' && driver.type === 'independent' && !leg?.accepted;
   const needsAcknowledgement = tripStatus === 'driver_assigned' && driver.type !== 'independent' && !leg?.acknowledged;
   const primary = getPrimaryAction(tripStatus, returnTrip, needsOfferResponse, needsAcknowledgement);
+  const canOpenNavigation = Boolean(task && !needsOfferResponse && !needsAcknowledgement);
 
   if (navigationOpen && task) return <DriverNavigation
     booking={booking}
@@ -251,7 +279,7 @@ function DriverToday({ driver, state, task, taskCount, completedCount, availabil
           if (!actions.driverAction(booking.id, legName, 'start', position)) return false;
           setNavigationStarted(true);
         } else {
-          if (!actions.driverAction(booking.id, legName, action)) return false;
+          if (!actions.driverAction(booking.id, legName, action, position)) return false;
           if (action === 'picked_up') setNavigationStarted(false);
           if (action === 'arrived_site' || action === 'complete') setNavigationOpen(false);
         }
@@ -271,7 +299,19 @@ function DriverToday({ driver, state, task, taskCount, completedCount, availabil
       <section className="driver-trip-card">
         <div className="driver-trip-heading"><div><span className={`trip-type-pill ${returnTrip ? 'trip-type-return' : ''}`}>{returnTrip ? 'RETURN' : 'OUTBOUND'}</span><h2>{returnTrip ? 'Return to donor' : 'Pickup for donation'}</h2></div><StatusChip booking={booking} compact /></div>
         <div className="driver-trip-meta"><span><Clock3 size={14} />{returnTrip ? 'Ready now' : `${formatTime(booking.pickupTime || '08:45')} pickup`}</span><span className="driver-trip-length">{approachingPickup ? 'To pickup' : 'Donor on board'}</span></div>
-        <div className="driver-live-map-frame"><JourneyMap booking={booking} leg={legName} from={routeFrom} to={routeTo} className="driver-live-map-canvas" controls /></div>
+        <div className="driver-live-map-frame">
+          <JourneyMap booking={booking} leg={legName} from={routeFrom} to={routeTo} className="driver-live-map-canvas" controls />
+          {canOpenNavigation && (
+            <button
+              type="button"
+              className="driver-map-resume-nav"
+              onClick={() => setNavigationOpen(true)}
+            >
+              <Navigation size={13} />
+              <span>{tripStatus === 'driver_assigned' ? 'Open navigation' : 'Navigation mode'}</span>
+            </button>
+          )}
+        </div>
         <div className="driver-route-details">
           <div className="driver-route-row"><span className="route-small-dot dot-origin" /><div><small>{approachingPickup ? 'CURRENT ROUTE START' : 'PICKUP'}</small><strong>{routeFrom}</strong></div></div>
           <div className="driver-route-row"><span className="route-small-dot dot-destination" /><div><small>{approachingPickup ? 'DRIVE TO PICKUP' : returnTrip ? 'DROP-OFF' : 'DONATION SITE'}</small><strong>{routeTo}</strong>{!returnTrip && !approachingPickup && <small className="driver-appointment-small">Appointment · {formatTime(booking.appointment.time)}</small>}</div></div>
@@ -282,15 +322,28 @@ function DriverToday({ driver, state, task, taskCount, completedCount, availabil
         {primary.kind === 'offer' ? <div className="driver-response-actions">
           <button className="button button-quiet button-wide" type="button" onClick={() => actions.driverAction(booking.id, legName, 'decline')}>Decline</button>
           <button className="button button-primary button-wide" type="button" onClick={() => { actions.driverAction(booking.id, legName, 'accept'); setNavigationOpen(true); setNavigationStarted(false); }}>Accept trip <ArrowRight size={15} /></button>
-        </div> : <button className="button button-primary button-wide driver-primary-action" type="button" onClick={() => {
-          if (primary.action === 'acknowledge') { actions.driverAction(booking.id, legName, primary.action); setNavigationOpen(true); setNavigationStarted(false); }
-          else if (primary.action === 'start') { setNavigationOpen(true); setNavigationStarted(false); }
-          else if (primary.action === 'picked_up') { actions.driverAction(booking.id, legName, primary.action); setNavigationOpen(true); setNavigationStarted(false); }
-          else actions.driverAction(booking.id, legName, primary.action);
-        }}>
-          {primary.icon === 'navigation' ? <Navigation size={16} /> : primary.icon === 'check' ? <Check size={17} /> : <MapPin size={16} />}
-          {primary.label}<ArrowRight size={15} />
-        </button>}
+        </div> : <div className="driver-today-actions">
+          {canOpenNavigation && primary.action !== 'start' && (
+            <button
+              className="button button-carbon button-wide driver-resume-nav-btn"
+              type="button"
+              onClick={() => setNavigationOpen(true)}
+            >
+              <Navigation size={16} />
+              {tripStatus === 'driver_arrived' ? 'Open navigation mode' : 'Back to navigation mode'}
+              <ArrowRight size={15} />
+            </button>
+          )}
+          <button className="button button-primary button-wide driver-primary-action" type="button" onClick={() => {
+            if (primary.action === 'acknowledge') { actions.driverAction(booking.id, legName, primary.action); setNavigationOpen(true); setNavigationStarted(false); }
+            else if (primary.action === 'start') { setNavigationOpen(true); setNavigationStarted(false); }
+            else if (primary.action === 'picked_up') { actions.driverAction(booking.id, legName, primary.action); setNavigationOpen(true); setNavigationStarted(false); }
+            else actions.driverAction(booking.id, legName, primary.action);
+          }}>
+            {primary.icon === 'navigation' ? <Navigation size={16} /> : primary.icon === 'check' ? <Check size={17} /> : <MapPin size={16} />}
+            {primary.label}<ArrowRight size={15} />
+          </button>
+        </div>}
         {tripStatus !== 'driver_assigned' && <button className="driver-report-link" type="button" onClick={onReport}><AlertTriangle size={14} /> Report a trip issue</button>}
       </section>
     </> : <section className="driver-no-assignment">
@@ -384,14 +437,15 @@ function DriverNavigation({ booking, leg, legName, returnTrip, driverName, route
   const gpsProjection = routeDetails && currentPosition ? projectProgressOnRoute(routeDetails.path, currentPosition) : null;
   const gpsFresh = gpsMode === 'live' && Boolean(currentPosition?.updatedAt)
     && Date.now() - Date.parse(currentPosition.updatedAt) < 15_000;
-  const demoNavigation = gpsMode === 'unavailable' || (gpsMode === 'live' && !gpsFresh);
+  const gpsOnRoute = Boolean(gpsFresh && gpsProjection && gpsProjection.offRouteMeters <= 220);
+  const demoNavigation = gpsMode === 'unavailable' || !gpsOnRoute;
   const routeStart = routeDetails?.from || (routeDetails?.path?.[0]
     ? { lat: routeDetails.path[0][0], lon: routeDetails.path[0][1] }
     : null);
-  const actionPosition = gpsFresh ? currentPosition : routeStart ? { ...routeStart, simulated: true } : null;
+  const actionPosition = gpsOnRoute ? currentPosition : routeStart ? { ...routeStart, simulated: true } : null;
   /* One source of truth for progress: the shared journey timeline. A fresh, on-road GPS fix
      can only move the car further along the route, never backwards. */
-  const progress = navigating && gpsFresh && gpsProjection && gpsProjection.offRouteMeters <= 220
+  const progress = navigating && gpsOnRoute
     ? Math.max(journeyMapState.progress, gpsProjection.progress)
     : journeyMapState.progress;
   const remainingMeters = routeDetails ? routeDetails.distance * (1 - progress) : null;
@@ -450,7 +504,7 @@ function DriverNavigation({ booking, leg, legName, returnTrip, driverName, route
     <header className="driver-navigation-top">
       <button type="button" onClick={onBack} aria-label="Back to trip"><ArrowLeft size={19} /></button>
       <span>{navigating ? 'LIVE NAVIGATION' : 'DRIVER NAVIGATION'}</span>
-      <span className={`driver-nav-live${gpsFresh ? ' is-live' : demoNavigation ? ' is-simulated' : ' is-route-ready'}`}><i /> {gpsFresh ? 'LIVE' : demoNavigation ? 'SIMULATED' : 'ROUTE READY'}</span>
+      <span className={`driver-nav-live${gpsOnRoute ? ' is-live' : demoNavigation ? ' is-simulated' : ' is-route-ready'}`}><i /> {gpsOnRoute ? 'LIVE' : demoNavigation ? 'SIMULATED' : 'ROUTE READY'}</span>
     </header>
     <div className="driver-navigation-map"><JourneyMap booking={booking} leg={legName} from={routeFrom} to={routeTo} className="driver-navigation-map-canvas" controls liveControl navigationStyle fitPaddingTopLeft={[44, 176]} fitPaddingBottomRight={[44, 240]} />
       <div className="driver-turn-banner" aria-live="polite">
@@ -661,7 +715,7 @@ function DriverReports({ driver, state, actions }) {
   </div>;
 }
 
-function DriverProfile({ driver, state, availability, tasks, onOpenToday, onSupport }) {
+function DriverProfile({ driver, state, availability, tasks, onOpenToday, onResumeNavigation, onSupport }) {
   const rows = getDriverActivityRows(state, driver?.id);
   const week = getActivityBuckets(rows, 'week');
   const weekRows = rows.filter((row) => {
@@ -695,7 +749,12 @@ function DriverProfile({ driver, state, availability, tasks, onOpenToday, onSupp
           <strong>{activeTask.booking.donorName.split(' ')[0]} · {activeTask.legName === 'return' ? 'Return journey' : 'Donation pickup'}</strong>
           <span className="profile-trip-reference">{activeTask.booking.reference}</span>
           <span className="profile-trip-route"><span>{activeTask.legName === 'return' ? activeTask.booking.appointment.locationName : activeTask.booking.pickupAddress}</span><i /><span>{activeTask.legName === 'return' ? 'Donor home' : activeTask.booking.appointment.locationName}</span></span>
-          <button type="button" onClick={onOpenToday}>Open today’s trip <ArrowRight size={14} /></button>
+          <div className="driver-profile-trip-actions">
+            <button type="button" onClick={onOpenToday}>Open today’s trip <ArrowRight size={14} /></button>
+            {!(activeTask.leg.status === 'driver_assigned' && ((driver?.type === 'independent' && !activeTask.leg.accepted) || (driver?.type !== 'independent' && !activeTask.leg.acknowledged))) && (
+              <button type="button" className="is-nav" onClick={onResumeNavigation}><Navigation size={14} /> Navigation mode</button>
+            )}
+          </div>
         </> : <><strong>No active trip</strong><span className="profile-trip-empty">An assignment will appear here when transport operations dispatches one.</span></>}
       </section>
       <button type="button" className="driver-profile-support" onClick={onSupport}><span><CircleHelp size={16} /></span><span><strong>Driver support</strong><small>Help with your shift or an assignment</small></span><ChevronRight size={16} /></button>

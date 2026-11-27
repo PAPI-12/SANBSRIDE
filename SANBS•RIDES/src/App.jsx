@@ -559,6 +559,10 @@ export default function App() {
           assignedAt: new Date().toISOString(),
           statusAt: new Date().toISOString(),
           driverCoordinates: candidate.currentCoordinates || null,
+          currentPosition: null,
+          navigationProgress: null,
+          navigationMode: null,
+          etaMinutes: null,
         };
         return current;
       },
@@ -656,20 +660,37 @@ export default function App() {
           leg.driverId = null;
           leg.acknowledged = false;
           leg.accepted = false;
+          leg.navigationProgress = null;
+          leg.navigationMode = null;
+          leg.currentPosition = null;
         }
         if (action === 'start') {
+          const liveStart = currentPosition && !currentPosition.simulated ? normalizePosition(currentPosition) : null;
           if (leg.status === 'driver_assigned') leg.status = 'driver_on_the_way';
-          leg.navigationMode = currentPosition?.simulated ? 'simulated' : 'live';
-          leg.navigationProgress = currentPosition?.simulated ? null : 0;
+          leg.navigationMode = liveStart ? 'live' : 'simulated';
+          leg.navigationProgress = liveStart ? 0 : null;
           leg.etaMinutes = null;
           leg.driverCoordinates = startPosition || normalizePosition(driver.currentCoordinates) || normalizePosition(leg.driverCoordinates);
-          leg.currentPosition = leg.driverCoordinates;
+          leg.currentPosition = liveStart;
         }
-        if (action === 'arrived') leg.status = 'driver_arrived';
+        if (action === 'arrived') {
+          leg.status = 'driver_arrived';
+          leg.navigationProgress = null;
+          leg.currentPosition = null;
+        }
         if (action === 'picked_up') {
+          const liveStart = currentPosition && !currentPosition.simulated ? normalizePosition(currentPosition) : null;
           leg.status = legName === 'return' ? 'donor_on_the_way_home' : 'donor_picked_up';
-          leg.navigationProgress = 0;
-          leg.navigationMode = null;
+          if (legName === 'return') {
+            leg.navigationMode = liveStart ? 'live' : 'simulated';
+            leg.navigationProgress = liveStart ? 0 : null;
+            leg.currentPosition = liveStart;
+          } else {
+            leg.navigationProgress = null;
+            leg.navigationMode = null;
+            leg.currentPosition = null;
+          }
+          leg.etaMinutes = null;
         }
         if (action === 'arrived_site') leg.status = 'arrived_at_site';
         if (action === 'complete') leg.status = 'completed';

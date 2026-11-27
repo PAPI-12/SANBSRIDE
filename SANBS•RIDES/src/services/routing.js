@@ -115,8 +115,8 @@ export async function getBookingRoute(booking, leg = 'outbound', phase = 'to_des
     from = driver;
     to = isReturn ? centre : pickup;
   } else if (phase === 'to_pickup' && !driver) {
-    from = pickup;
-    to = centre;
+    from = isReturn ? centre : pickup;
+    to = isReturn ? pickup : centre;
   } else {
     from = isReturn ? centre : pickup;
     to = isReturn ? pickup : centre;

@@ -1896,6 +1896,32 @@
   background: #0F1115;
 }
 .driver-live-map-canvas { width: 100%; height: 100%; }
+.driver-map-resume-nav {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 999px;
+  background: rgba(10, 11, 13, .9);
+  color: #FFFFFF;
+  font-size: 11.5px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .38);
+  transition: background .15s ease, transform .12s ease;
+}
+.driver-map-resume-nav:hover {
+  background: #D42127;
+  border-color: #D42127;
+  transform: translateY(-1px);
+}
+.driver-map-resume-nav svg { color: #FF4D53; }
+.driver-map-resume-nav:hover svg { color: #FFFFFF; }
 
 .driver-route-details {
   display: flex;
@@ -1951,6 +1977,8 @@
 .privacy-mini { display: inline-flex; align-items: center; gap: 4px; color: var(--muted); font-size: 11px; }
 
 .driver-trip-progress { padding: 14px; border-radius: 18px; background: #FFFFFF; }
+.driver-today-actions { display: flex; flex-direction: column; gap: 8px; }
+.driver-resume-nav-btn { min-height: 46px; }
 .driver-primary-action { min-height: 50px; }
 .driver-response-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
 .driver-report-link {
@@ -2140,12 +2168,17 @@
 .profile-trip-route { display: flex; align-items: center; gap: 8px; margin-top: 4px; color: #D1D5DB; font-size: 11.5px; }
 .profile-trip-route i { width: 12px; height: 1px; background: #4B5563; }
 .profile-trip-empty { color: #9CA3AF; font-size: 12px; }
-.driver-profile-trip-card > button {
+.driver-profile-trip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+  margin-top: 8px;
+}
+.driver-profile-trip-actions > button {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  align-self: flex-start;
-  margin-top: 8px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -2153,6 +2186,13 @@
   font-size: 12.5px;
   font-weight: 700;
 }
+.driver-profile-trip-actions > button.is-nav {
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 77, 83, .14);
+  color: #FFFFFF;
+}
+.driver-profile-trip-actions > button.is-nav svg { color: #FF4D53; }
 
 .driver-profile-support {
   display: flex;

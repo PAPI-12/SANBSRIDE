@@ -222,3 +222,24 @@ test('the outbound drop rises monotonically from booking through approach to the
   assert.equal(fills[0], 0);
   assert.ok(Math.abs(fills[fills.length - 1] - 1) < 1e-9, 'drop is full on arrival at the centre');
 });
+
+test('return journey ride moves smoothly along donor_on_the_way_home even with stale 0 or simulated progress', () => {
+  const booking = bookingAt('arrived_at_site', 'donor_on_the_way_home', true);
+  booking.returnLeg.statusAt = new Date(100_000).toISOString();
+  booking.returnLeg.navigationMode = null;
+  booking.returnLeg.navigationProgress = 0;
+
+  const early = getJourneyMapState(booking, 'return', 130_000);
+  const later = getJourneyMapState(booking, 'return', 190_000);
+  assert.equal(early.phase, 'to_destination');
+  assert.equal(early.moving, true);
+  assert.equal(early.progress, 0.25);
+  assert.equal(later.progress, 0.75);
+  assert.ok(later.progress > early.progress, 'return ride must advance over time');
+
+  booking.returnLeg.navigationMode = 'simulated';
+  booking.returnLeg.navigationProgress = 0;
+  const simulated = getJourneyMapState(booking, 'return', 160_000);
+  assert.equal(simulated.progress, 0.5);
+});
+

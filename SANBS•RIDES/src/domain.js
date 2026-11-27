@@ -866,7 +866,10 @@ export function getJourneyMapState(booking, leg = 'outbound', now = Date.now()) 
 
   if (moving) {
     const activeLeg = getLeg(booking, leg);
-    if (Number.isFinite(activeLeg?.navigationProgress)) {
+    const hasLiveProgress = activeLeg?.navigationMode !== 'simulated'
+      && Number.isFinite(activeLeg?.navigationProgress)
+      && (activeLeg?.navigationMode === 'live' || activeLeg.navigationProgress > 0);
+    if (hasLiveProgress) {
       fixedProgress = Math.max(0, Math.min(activeLeg.navigationProgress, 1));
     } else {
       const statusAt = Date.parse(activeLeg?.statusAt || '');
