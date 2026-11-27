@@ -73,19 +73,9 @@ function LogoSplashScreen({ onComplete }) {
   };
 
   return (
-    <div
-      className={`auth-splash-screen${leaving ? ' is-leaving' : ''}`}
-      onClick={skipIntro}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ' || event.key === 'Escape') {
-          event.preventDefault();
-          skipIntro();
-        }
-      }}
-      role="button"
-      tabIndex={0}
-      aria-label="SANBS RIDE — continue to sign in"
-    >
+    <div className={`auth-splash-screen${leaving ? ' is-leaving' : ''}`} onClick={skipIntro}>
+      <span className="auth-splash-spacer" aria-hidden="true" />
+
       <div className="auth-splash-center">
         <div className="auth-splash-emblem" aria-hidden="true">
           <span className="auth-splash-ring" />
@@ -127,7 +117,16 @@ function LogoSplashScreen({ onComplete }) {
         </div>
       </div>
 
-      <span className="auth-splash-hint">Tap anywhere to continue</span>
+      <button
+        type="button"
+        className="auth-splash-hint"
+        onClick={(event) => {
+          event.stopPropagation();
+          skipIntro();
+        }}
+      >
+        Tap to continue
+      </button>
     </div>
   );
 }
@@ -319,16 +318,7 @@ export function AuthFlow({
               </label>
 
               <label className="field">
-                <div className="auth-label-row">
-                  <span className="field-label">Password</span>
-                  <button
-                    type="button"
-                    className="text-action"
-                    onClick={() => onToast?.(`Tap "Quick demo" below or enter any 4+ character password.`)}
-                  >
-                    Help
-                  </button>
-                </div>
+                <span className="field-label">Password</span>
                 <div className="auth-password-wrap">
                   <input
                     className="text-input"
