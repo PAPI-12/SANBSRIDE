@@ -16,6 +16,7 @@ import {
   RADII,
   SPACING,
   STATUS_CHIP_SPECS,
+  STUDIO_MEDIA,
   TYPOGRAPHY,
   Z_INDEX,
   contrastRatio,
@@ -103,4 +104,11 @@ test('Brand artwork, stealth map palette, accessibility rules, and manifest alig
   const manifest = JSON.parse(readWorkspaceFile('public/manifest.webmanifest'));
   assert.equal(manifest.background_color, COLORS.canvas);
   assert.equal(manifest.theme_color, COLORS.carbon);
+
+  const mediaKeys = Object.keys(STUDIO_MEDIA);
+  assert.ok(mediaKeys.length >= 6, 'STUDIO_MEDIA includes editorial scenes and spot illustrations');
+  for (const key of mediaKeys) {
+    const rel = STUDIO_MEDIA[key].replace(/^\//, '');
+    assert.ok(fs.existsSync(path.join(rootDir, 'public', rel)), `${STUDIO_MEDIA[key]} exists in public/`);
+  }
 });

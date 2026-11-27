@@ -19,6 +19,9 @@ export const STUDIO_MEDIA = {
   heroMobility: '/design-system/hero-mobility.png',
   donorSanctuary: '/design-system/donor-centre-editorial.png',
   stealthGrid: '/design-system/stealth-city-grid.png',
+  illustBookRide: '/design-system/illust-book-ride.png',
+  illustDriverPickup: '/design-system/illust-driver-pickup.png',
+  illustSafeReturn: '/design-system/illust-safe-return.png',
 };
 
 export const BRAND_ARTWORK = {
