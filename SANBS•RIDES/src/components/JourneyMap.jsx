@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
-import { Compass, LocateFixed, Navigation } from 'lucide-react';
+import { Compass, LocateFixed } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 import { friendlyServiceMessage } from '../services/http.js';
 import { getJourneyMapState } from '../domain.js';
@@ -7,12 +7,12 @@ import { getBookingRoute } from '../services/routing.js';
 
 const OSM_TILES = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const DROP_PATH = 'M12 1C12 1 2.5 12.5 2.5 19a9.5 9.5 0 0 0 19 0C21.5 12.5 12 1 12 1Z';
-const HOME_PIN = '<span class="journey-pin journey-pin-home"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span>';
+const HOME_PIN = '<span class="journey-pin journey-pin-home" aria-hidden="true"><span class="journey-origin-beacon"></span></span>';
 const CAR_PIN = '<span class="journey-pin journey-pin-car"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 11h18v5H3z"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg></span>';
 const NAVIGATION_PIN = '<span class="journey-pin journey-pin-navigation" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 5 5 42l19-9 19 9L24 5Z"/></svg></span>';
 
 function whiteDropPin(clipId) {
-  return `<span class="journey-pin-drop-marker"><svg viewBox="0 0 24 30" aria-hidden="true"><defs><clipPath id="${clipId}"><path d="${DROP_PATH}"/></clipPath></defs><path d="${DROP_PATH}" fill="#fff"/><rect class="journey-drop-liquid" x="0" y="30" width="24" height="30" fill="#D42127" clip-path="url(#${clipId})"/><path d="${DROP_PATH}" fill="none" stroke="#7C0F13" stroke-width="1.4" stroke-linejoin="round"/><ellipse cx="8.2" cy="17.5" rx="1.9" ry="3.2" fill="#fff" opacity=".45" transform="rotate(18 8.2 17.5)"/></svg></span>`;
+  return `<span class="journey-pin-drop-marker"><svg viewBox="0 0 24 30" aria-hidden="true"><defs><clipPath id="${clipId}"><path d="${DROP_PATH}"/></clipPath></defs><path d="${DROP_PATH}" fill="#181B22"/><rect class="journey-drop-liquid" x="0" y="30" width="24" height="30" fill="#D42127" clip-path="url(#${clipId})"/><path d="${DROP_PATH}" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="18.2" r="2.6" fill="#FFFFFF" opacity=".92"/></svg></span>`;
 }
 
 function pointAlongRoute(path, fraction) {
@@ -42,10 +42,18 @@ function pointAlongRoute(path, fraction) {
   return { point: path[path.length - 1], travelled: path };
 }
 
-function fitRoute(map, path) {
+function fitRoute(map, path, {
+  paddingTopLeft = [44, 44],
+  paddingBottomRight = [44, 44],
+  maxZoom = 14,
+} = {}) {
   if (path.length < 2) return;
-  /* Frame the whole route and keep both pins inside the view, with room for the on-map controls. */
-  map.fitBounds(path, { padding: [40, 40], maxZoom: 15, animate: false });
+  map.fitBounds(path, {
+    paddingTopLeft,
+    paddingBottomRight,
+    maxZoom,
+    animate: false,
+  });
 }
 
 function routeScreenHeading(path, fraction) {
@@ -76,6 +84,10 @@ export default function JourneyMap({
   controls = false,
   liveControl = false,
   navigationStyle = false,
+  scrollWheelZoom = false,
+  fitPaddingTopLeft = [44, 44],
+  fitPaddingBottomRight = [44, 44],
+  maxFitZoom = 14,
   className = 'journey-live-map',
   focusToken = 0,
 }) {
@@ -95,12 +107,20 @@ export default function JourneyMap({
   const legRecord = booking[leg === 'return' ? 'returnLeg' : 'outbound'];
   const hasDriver = Boolean(legRecord?.driverId);
   const simulatedNavigation = legRecord?.navigationMode === 'simulated';
-  /* The car is placed on the route by the shared journey timeline. Only a live, recent GPS fix
-     from the driver's device overrides that; a stored or seeded position never does. */
   const liveFixAge = legRecord?.currentPosition?.updatedAt ? Date.now() - Date.parse(legRecord.currentPosition.updatedAt) : Infinity;
   const driverPosition = legRecord?.navigationMode === 'live' && liveFixAge < 15_000 ? legRecord.currentPosition : null;
   const driverPositionRef = useRef(null);
   const simulatedRef = useRef(simulatedNavigation);
+  const fitOptionsRef = useRef({
+    paddingTopLeft: fitPaddingTopLeft,
+    paddingBottomRight: fitPaddingBottomRight,
+    maxZoom: maxFitZoom,
+  });
+  fitOptionsRef.current = {
+    paddingTopLeft: fitPaddingTopLeft,
+    paddingBottomRight: fitPaddingBottomRight,
+    maxZoom: maxFitZoom,
+  };
   simulatedRef.current = simulatedNavigation;
   progressRef.current = progress;
   fillProgressRef.current = mapState.fillProgress;
@@ -134,30 +154,30 @@ export default function JourneyMap({
         if (disposed || !hostRef.current) return;
         const path = route.path;
         if (!disposed) setApproximate(Boolean(route.approximate));
-        mapInstance = L.map(hostRef.current, { zoomControl: false, attributionControl: true, scrollWheelZoom: false });
+        mapInstance = L.map(hostRef.current, { zoomControl: false, attributionControl: true, scrollWheelZoom });
         L.tileLayer(OSM_TILES, { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(mapInstance);
         const pinIcon = (html, size = [34, 34], anchor = [17, 17]) => L.divIcon({ className: 'journey-pin-wrap', html, iconSize: size, iconAnchor: anchor });
         if (navigationStyle) {
-          L.polyline(path, { color: '#fff', weight: 14, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
-          L.polyline(path, { color: '#151719', weight: 10, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+          L.polyline(path, { color: 'rgba(255, 59, 66, 0.28)', weight: 14, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+          L.polyline(path, { color: '#272B35', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         } else {
-          L.polyline(path, { color: '#808D99', weight: 7, opacity: 0.86, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+          L.polyline(path, { color: 'rgba(255, 59, 66, 0.24)', weight: 12, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+          L.polyline(path, { color: '#2D323E', weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         }
-        const travelled = L.polyline([path[0]], { color: navigationStyle ? '#E53B43' : '#D42127', weight: navigationStyle ? 6 : 7, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+        L.polyline(path, { color: '#FF3B42', weight: navigationStyle ? 4.5 : 3.5, opacity: 0.42, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+        const travelled = L.polyline([path[0]], { color: '#FF3B42', weight: navigationStyle ? 6 : 5.5, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         const pickupMarker = L.marker([route.pickup.lat, route.pickup.lon], {
-          icon: pinIcon(HOME_PIN), keyboard: false, title: `Verified pickup: ${booking.pickupAddress}`,
+          icon: pinIcon(HOME_PIN, [26, 26], [13, 13]), keyboard: false, title: `Verified pickup: ${booking.pickupAddress}`,
           opacity: navigationStyle ? 0 : 1,
         }).addTo(mapInstance);
-        pickupMarker.bindTooltip(booking.pickupAddress, { direction: 'top', offset: [0, -12] });
+        pickupMarker.bindTooltip(booking.pickupAddress, { direction: 'top', offset: [0, -10] });
         const dropMarker = L.marker([route.centre.lat, route.centre.lon], {
-          icon: pinIcon(whiteDropPin(clipId), [40, 50], [20, 25]),
+          icon: pinIcon(whiteDropPin(clipId), [40, 50], [20, 42]),
           keyboard: false,
           opacity: navigationStyle ? 0 : 1,
           title: `Selected SANBS centre: ${booking.appointment.locationName}`,
         }).addTo(mapInstance);
-        dropMarker.bindTooltip(booking.appointment.locationName, { direction: 'top', offset: [0, -12] });
-        // The GPS fix is already pushed through shared app state. Update a
-        // normal Leaflet marker directly rather than polling a GeoJSON source.
+        dropMarker.bindTooltip(booking.appointment.locationName, { direction: 'top', offset: [0, -16] });
         const car = L.marker(path[0], {
           icon: navigationStyle ? pinIcon(NAVIGATION_PIN, [58, 58], [29, 29]) : pinIcon(CAR_PIN),
           zIndexOffset: 600,
@@ -165,6 +185,7 @@ export default function JourneyMap({
           title: 'Driver live GPS position',
           opacity: hasDriverRef.current ? 1 : 0,
         }).addTo(mapInstance);
+        const fitBoundsList = [...path, [route.pickup.lat, route.pickup.lon], [route.centre.lat, route.centre.lon]];
         const live = {
           map: mapInstance,
           path,
@@ -172,6 +193,7 @@ export default function JourneyMap({
           car,
           travelled,
           follow: navigationStyle,
+          userAdjusted: false,
           dropLiquid: dropMarker.getElement()?.querySelector('.journey-drop-liquid') || null,
         };
         liveRef.current = live;
@@ -189,7 +211,7 @@ export default function JourneyMap({
         if (navigationStyle) {
           keepDriverInFocus(pointAlongRoute(path, progressRef.current).point);
         } else {
-          fitRoute(mapInstance, [...path, [route.pickup.lat, route.pickup.lon], [route.centre.lat, route.centre.lon]]);
+          fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
         }
         const placeCar = (nextProgress, fillProgress) => {
           const { point: routePoint, travelled: line } = pointAlongRoute(path, nextProgress);
@@ -218,14 +240,26 @@ export default function JourneyMap({
         };
         live.placeCar = placeCar;
         placeCar(progressRef.current, fillProgressRef.current);
-        mapInstance.on('dragstart', () => { live.follow = false; });
+        mapInstance.on('dragstart', () => {
+          live.follow = false;
+          live.userAdjusted = true;
+        });
         if (typeof ResizeObserver !== 'undefined') {
-          resizeObserver = new ResizeObserver(() => mapInstance?.invalidateSize({ pan: false }));
+          resizeObserver = new ResizeObserver(() => {
+            if (!mapInstance) return;
+            mapInstance.invalidateSize({ pan: false });
+            if (!navigationStyle && !live.userAdjusted) {
+              fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
+            }
+          });
           resizeObserver.observe(hostRef.current);
         }
         window.setTimeout(() => {
           if (!mapInstance) return;
           mapInstance.invalidateSize({ pan: false });
+          if (!navigationStyle && !live.userAdjusted) {
+            fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
+          }
           live.placeCar(progressRef.current, fillProgressRef.current);
         }, 80);
       } catch (error) {
@@ -239,7 +273,7 @@ export default function JourneyMap({
       mapInstance?.remove();
       liveRef.current = null;
     };
-  }, [retryToken, booking.id, booking.appointment.coordinates?.lat, booking.appointment.coordinates?.lon, booking.appointment.locationId, booking.appointment.locationName, booking.pickupAddress, booking.pickupCoordinates?.lat, booking.pickupCoordinates?.lon, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lat, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lon, clipId, leg, navigationStyle, phase]);
+  }, [retryToken, booking.id, booking.appointment.coordinates?.lat, booking.appointment.coordinates?.lon, booking.appointment.locationId, booking.appointment.locationName, booking.pickupAddress, booking.pickupCoordinates?.lat, booking.pickupCoordinates?.lon, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lat, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lon, clipId, leg, navigationStyle, phase, scrollWheelZoom]);
 
   useEffect(() => {
     liveRef.current?.placeCar(progress, mapState.fillProgress);
@@ -261,6 +295,7 @@ export default function JourneyMap({
     const live = liveRef.current;
     if (!live) return;
     live.follow = true;
+    live.userAdjusted = true;
     const position = driverPositionRef.current;
     const point = Number.isFinite(Number(position?.lat)) && Number.isFinite(Number(position?.lon))
       ? [Number(position.lat), Number(position.lon)]
@@ -271,15 +306,19 @@ export default function JourneyMap({
     const live = liveRef.current;
     if (!live) return;
     live.follow = false;
-    fitRoute(live.map, [...live.path, live.pinBounds?.[0], live.pinBounds?.[1]].filter(Boolean));
+    live.userAdjusted = false;
+    fitRoute(live.map, [...live.path, live.pinBounds?.[0], live.pinBounds?.[1]].filter(Boolean), fitOptionsRef.current);
   };
   const zoom = (direction) => {
-    if (direction > 0) liveRef.current?.map.zoomIn();
-    else liveRef.current?.map.zoomOut();
+    const live = liveRef.current;
+    if (!live) return;
+    live.userAdjusted = true;
+    if (direction > 0) live.map.zoomIn();
+    else live.map.zoomOut();
   };
 
   return <>
-    <div className={`${className}${navigationStyle ? ' is-navigation-map' : ''}`} ref={hostRef} />
+    <div className={`${className} is-stealth-map${navigationStyle ? ' is-navigation-map' : ''}`} ref={hostRef} />
     <p className="sr-only">{`Route from ${from} to ${to}. Pickup: ${booking.pickupAddress}. Destination: ${booking.appointment.locationName}.`}</p>
     {mapError && <div className="journey-map-error" role="status">
       <strong>Map unavailable</strong>

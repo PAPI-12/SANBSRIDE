@@ -151,11 +151,11 @@ export function DriverApp({ state, actions }) {
           <button className={tab === 'reports' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('reports')} aria-current={tab === 'reports' ? 'page' : undefined}><BarChart3 size={18} /><span>Reports</span></button>
           <button className={tab === 'profile' ? 'app-rail-item active' : 'app-rail-item'} type="button" onClick={() => setTab('profile')} aria-current={tab === 'profile' ? 'page' : undefined}><UserRound size={18} /><span>Profile</span></button>
         </nav>
-        <nav className="mobile-bottom-nav driver-bottom-nav" aria-label="Driver app navigation">
-          <button className={tab === 'today' ? 'active' : ''} type="button" onClick={() => setTab('today')} aria-current={tab === 'today' ? 'page' : undefined}><Navigation size={19} /><span>Today</span></button>
-          <button className={tab === 'trips' ? 'active' : ''} type="button" onClick={() => setTab('trips')} aria-current={tab === 'trips' ? 'page' : undefined}><Truck size={19} /><span>Trips</span></button>
-          <button className={tab === 'reports' ? 'active' : ''} type="button" onClick={() => setTab('reports')} aria-current={tab === 'reports' ? 'page' : undefined}><BarChart3 size={19} /><span>Reports</span></button>
-          <button className={tab === 'profile' ? 'active' : ''} type="button" onClick={() => setTab('profile')} aria-current={tab === 'profile' ? 'page' : undefined}><UserRound size={19} /><span>Profile</span></button>
+        <nav className="mobile-bottom-nav driver-bottom-nav driver-circular-dock" aria-label="Driver app navigation">
+          <button className={`dock-circle-btn${tab === 'today' ? ' active' : ''}`} type="button" onClick={() => setTab('today')} aria-label="Today" aria-current={tab === 'today' ? 'page' : undefined} title="Today"><Navigation size={20} strokeWidth={tab === 'today' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'trips' ? ' active' : ''}`} type="button" onClick={() => setTab('trips')} aria-label="Trips" aria-current={tab === 'trips' ? 'page' : undefined} title="Trips"><Truck size={20} strokeWidth={tab === 'trips' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'reports' ? ' active' : ''}`} type="button" onClick={() => setTab('reports')} aria-label="Reports" aria-current={tab === 'reports' ? 'page' : undefined} title="Reports"><BarChart3 size={20} strokeWidth={tab === 'reports' ? 2.3 : 1.9} /></button>
+          <button className={`dock-circle-btn${tab === 'profile' ? ' active' : ''}`} type="button" onClick={() => setTab('profile')} aria-label="Profile" aria-current={tab === 'profile' ? 'page' : undefined} title="Profile"><UserRound size={20} strokeWidth={tab === 'profile' ? 2.3 : 1.9} /></button>
         </nav>
       </section>
       {issueOpen && currentTask && <ReportIssueModal
@@ -569,7 +569,7 @@ function DriverActivityChart({ rows, period = 'week', variant = 'bars' }) {
     const fill = `${line} L ${right} ${baseline + 3} L ${left} ${baseline + 3} Z`;
     return <div className={`driver-activity-chart driver-activity-chart-line ${hasActivity ? 'has-activity' : 'is-empty'}`}>
       <svg viewBox={`0 0 ${width} 112`} preserveAspectRatio="none" role="img" aria-label={hasActivity ? `Trip assignments by period: ${buckets.map((bucket) => `${bucket.label} ${bucket.count}`).join(', ')}` : 'No trip assignments in this period'}>
-        <defs><linearGradient id="driver-activity-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#da291c" stopOpacity=".2" /><stop offset="1" stopColor="#da291c" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="driver-activity-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#FF4D53" stopOpacity=".28" /><stop offset="1" stopColor="#FF4D53" stopOpacity="0" /></linearGradient></defs>
         <line className="driver-chart-gridline" x1={left} y1={baseline} x2={right} y2={baseline} />
         {hasActivity && <path className="driver-chart-fill" d={fill} />}
         <path className={`driver-chart-line${hasActivity ? '' : ' is-empty'}`} d={line} />
@@ -732,13 +732,36 @@ function driverTripStatus(task) {
 }
 
 function DriverTrips({ driver, state, tasks, completed, onBack }) {
-  const rows = [
+  const [filter, setFilter] = useState('all');
+  const allRows = [
     ...tasks.map((task) => ({ ...task, isComplete: false })),
     ...completed.map((task) => ({ ...task, isComplete: true })),
   ];
+  const rows = allRows.filter((row) => {
+    if (filter === 'active') return !row.isComplete;
+    if (filter === 'completed') return row.isComplete;
+    return true;
+  });
   return <div className="driver-trips-page">
     <button className="screen-back-link" type="button" onClick={onBack}><ArrowLeft size={16} /> Today</button>
     <div className="driver-trips-title"><span className="section-kicker">YOUR WORK</span><h1>Today’s trips</h1><p>{driver?.name} · {formatDate(localDateString(), { weekday: 'long', day: 'numeric', month: 'long' })}</p></div>
+    <div className="trips-filter-circles" role="tablist" aria-label="Filter driver trips">
+      {[
+        { id: 'all', label: 'All', icon: Truck },
+        { id: 'active', label: 'Active', icon: Navigation },
+        { id: 'completed', label: 'Done', icon: Check },
+      ].map(({ id, label, icon: Icon }) => <button
+        key={id}
+        type="button"
+        role="tab"
+        aria-selected={filter === id}
+        className={`trips-circle-filter${filter === id ? ' is-active' : ''}`}
+        onClick={() => setFilter(id)}
+      >
+        <span className="trips-circle-disc"><Icon size={17} strokeWidth={2.2} /></span>
+        <small>{label}</small>
+      </button>)}
+    </div>
     {rows.length === 0 ? <EmptyState icon={Truck} title="No trips on your list" description="Assigned journeys will appear here with pickup details and status." compact /> : <div className="driver-trip-list">{rows.map((task, index) => <div className="driver-trip-list-row" key={`${task.booking.id}-${task.legName}-${index}`}>
       <div className="driver-list-time"><span>{task.legName === 'return' ? 'RETURN' : formatTime(task.booking.pickupTime || '08:45')}</span><i className={task.isComplete ? 'trip-list-done' : ''} /></div>
       <div className="driver-list-copy"><div><strong>{task.booking.donorName.split(' ')[0]} · {task.legName === 'return' ? 'Return' : 'Donation ride'}</strong><small>{task.legName === 'return' ? task.booking.appointment.locationName : task.booking.pickupAddress}</small></div><StatusChip status={driverTripStatus(task)} compact /></div>

@@ -166,7 +166,7 @@ function StaffOverview({ state, pendingPickups, inTransit, atCentre, openExcepti
       <div><span className="eyebrow">SANBS COLLECTION · SANDTON</span><h1>Transport arrivals</h1><p>{formatDate(localDateString(), { weekday: 'long', day: 'numeric', month: 'long' })} · Donor journeys at your site</p></div>
       <div className="page-title-actions"><button className="button button-secondary" type="button" onClick={onViewAll}><ClipboardList size={15} /> Journey register</button><button className="button button-primary" type="button" onClick={onNewBooking}><Plus size={16} /> Book for a donor</button></div>
     </header>
-    <div className="staff-status-band" aria-label="Today’s transport summary">{metrics.map(({ label, count }) => <div className="staff-status-item" key={label}><strong>{String(count).padStart(2, '0')}</strong><span>{label}</span></div>)}</div>
+    <div className="staff-status-band" aria-label="Today’s transport summary">{metrics.map(({ label, count, tone }, idx) => <div className={`staff-status-item${idx === 3 || (idx === 0 && count > 0) ? ' is-contrast' : ''}`} key={label}><strong className={tone === 'red' || tone === 'amber' ? 'is-accent' : ''}>{String(count).padStart(2, '0')}</strong><span>{label}</span></div>)}</div>
     <div className="staff-workbench">
       <section className="staff-arrivals-board">
         <div className="staff-board-heading"><div><span className="eyebrow">SHARED ARRIVAL BOARD</span><h2>Active donor journeys <span>{active.length}</span></h2></div><button className="text-action" type="button" onClick={onViewAll}>Open register <ArrowRight size={14} /></button></div>
