@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Check, ChevronDown, Car, Heart, LifeBuoy, LogOut, Palette, RotateCcw, ShieldCheck, X } from 'lucide-react';
+import { ArrowLeft, Bell, Check, ChevronDown, Car, Heart, LifeBuoy, LogOut, Palette, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import {
   STORAGE_KEY,
   createInitialState,
@@ -1005,7 +1005,10 @@ export default function App() {
             <span className="workspace-eyebrow">Design System Studio</span>
           </div>
           <div className="app-header-actions">
-            <span className="ds-version-pill">MONOCHROME · CRIMSON</span>
+            <button type="button" className="ds-back-btn" onClick={closeDesignSystem}>
+              <ArrowLeft size={15} aria-hidden="true" />
+              <span>Back to app</span>
+            </button>
           </div>
         </header>
         <Suspense fallback={<div className="role-loading" role="status">Loading design system…</div>}>

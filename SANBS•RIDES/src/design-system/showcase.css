@@ -1,12 +1,12 @@
 /* ==========================================================================
-   SANBS RIDE — Design System Interactive Studio Styles
+   SANBS RIDE — Design System Visual Bento Studio Styles
    ========================================================================== */
 
-.ds-root {
+.ds-studio {
   min-height: calc(100vh - var(--shell-h));
   background: var(--canvas);
   color: var(--ink);
-  padding-bottom: var(--sp-16);
+  padding: var(--sp-4) var(--sp-5) var(--sp-16);
 }
 
 .ds-reduce-motion *,
@@ -16,106 +16,6 @@
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
-}
-
-/* Studio Header Bar */
-.ds-studio-bar {
-  position: sticky;
-  top: var(--shell-h);
-  z-index: 45;
-  background: var(--carbon);
-  color: var(--white);
-  border-bottom: 1px solid var(--carbon-line);
-}
-
-.ds-studio-bar__inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: var(--sp-3) var(--sp-5);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-3);
-}
-
-.ds-studio-bar__brand {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  flex-wrap: wrap;
-}
-
-.ds-version-pill {
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  font-weight: 700;
-  letter-spacing: var(--tracking-label);
-  padding: 4px 10px;
-  border-radius: var(--pill);
-  background: var(--carbon-2);
-  border: 1px solid var(--carbon-line);
-  color: var(--accent-bright);
-}
-
-.ds-studio-bar__tools {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-}
-
-.ds-search-box {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  background: var(--carbon-2);
-  border: 1px solid var(--carbon-line);
-  border-radius: var(--pill);
-  padding: 0 var(--sp-3);
-  height: 38px;
-  min-width: 210px;
-  color: var(--muted-on-dark);
-}
-
-.ds-search-box input {
-  width: 100%;
-  background: transparent;
-  border: 0;
-  outline: none;
-  color: var(--white);
-  font-family: var(--font);
-  font-size: var(--fs-sm);
-}
-
-.ds-search-box input::placeholder {
-  color: var(--muted-on-dark);
-}
-
-.ds-toggle-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 var(--sp-3);
-  border-radius: var(--pill);
-  border: 1px solid var(--carbon-line);
-  background: var(--carbon-2);
-  color: var(--white);
-  font-family: var(--font);
-  font-size: var(--fs-caption);
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard);
-}
-
-.ds-toggle-pill:hover {
-  background: var(--carbon-3);
-}
-
-.ds-toggle-pill.is-active {
-  border-color: var(--accent-bright);
-  color: var(--accent-bright);
 }
 
 .ds-back-btn {
@@ -132,203 +32,153 @@
   font-size: var(--fs-caption);
   font-weight: 700;
   cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-standard);
 }
 
 .ds-back-btn:hover {
   background: var(--accent-dark);
 }
 
-/* Studio Shell Grid */
-.ds-shell {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: var(--sp-6) var(--sp-5) 0;
-  display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  gap: var(--sp-6);
-  align-items: start;
-}
-
-.ds-nav-rail {
+/* ==========================================================================
+   Floating Glass-Carbon Pill Command Bar
+   ========================================================================== */
+.ds-command-wrap {
   position: sticky;
-  top: calc(var(--shell-h) + 74px);
+  top: calc(var(--shell-h) + 10px);
+  z-index: 45;
+  max-width: 1400px;
+  margin: 0 auto var(--sp-5);
 }
 
-.ds-nav-rail__card {
-  background: var(--paper);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  padding: var(--sp-3);
-  box-shadow: var(--sh-1);
-}
-
-.ds-nav-rail__heading {
-  display: block;
-  padding: var(--sp-2) var(--sp-3);
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--muted);
-}
-
-.ds-nav-rail__list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.ds-command-bar {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: 8px 10px;
+  border-radius: var(--r-lg);
+  background: rgba(10, 11, 13, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--carbon-line);
+  box-shadow: var(--sh-ink);
 }
 
-.ds-nav-rail__link {
-  width: 100%;
+.ds-command-pills {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: 10px var(--sp-3);
-  border-radius: var(--r-sm);
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+.ds-command-pills::-webkit-scrollbar { display: none; }
+
+.ds-cmd-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--pill);
   border: 0;
   background: transparent;
-  color: var(--ink-2);
+  color: var(--muted-on-dark-2);
   font-family: var(--font);
-  font-size: var(--fs-sm);
+  font-size: 12.5px;
   font-weight: 600;
-  text-align: left;
+  white-space: nowrap;
   cursor: pointer;
   transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard);
 }
 
-.ds-nav-rail__link:hover {
-  background: var(--paper-2);
-}
-
-.ds-nav-rail__link.is-active {
-  background: var(--carbon);
+.ds-cmd-pill:hover {
+  background: var(--carbon-3);
   color: var(--white);
 }
 
-.ds-main {
+.ds-cmd-pill.is-active {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.ds-command-actions {
   display: flex;
-  flex-direction: column;
-  gap: var(--sp-10);
-  min-width: 0;
-}
-
-/* Hero Section */
-.ds-hero {
-  background: var(--carbon);
-  color: var(--white);
-  border-radius: var(--r-xl);
-  padding: var(--sp-7);
-  border: 1px solid var(--carbon-line);
-  box-shadow: var(--sh-ink);
-  background-image:
-    radial-gradient(rgba(255, 255, 255, .05) 1px, transparent 1px),
-    radial-gradient(circle at top right, rgba(212, 33, 39, .18), transparent 48%);
-  background-size: 24px 24px, 100% 100%;
-}
-
-.ds-hero__grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
-  gap: var(--sp-6);
   align-items: center;
+  gap: 6px;
+  margin-left: auto;
 }
 
-.ds-hero__copy h1 {
-  font-family: var(--display);
-  font-size: var(--fs-3xl);
-  font-weight: 800;
-  letter-spacing: -0.045em;
-  line-height: 1.05;
-  margin: var(--sp-2) 0 var(--sp-3);
-  color: var(--white);
-}
-
-.ds-hero__copy p {
-  margin: 0;
-  font-size: var(--fs-body);
-  line-height: 1.55;
-  color: var(--muted-on-dark-2);
-  max-width: 58ch;
-}
-
-.ds-hero__pills {
+.ds-cmd-search {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--sp-2);
-  margin-top: var(--sp-5);
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px;
+  min-width: 190px;
+  border-radius: var(--pill);
+  background: var(--carbon-2);
+  border: 1px solid var(--carbon-line);
+  color: var(--muted-on-dark);
 }
 
-.ds-jump-pill {
-  padding: 7px 13px;
+.ds-cmd-search input {
+  width: 100%;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 12.5px;
+}
+
+.ds-cmd-search input::placeholder {
+  color: var(--muted-on-dark);
+}
+
+.ds-cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 12px;
   border-radius: var(--pill);
   border: 1px solid var(--carbon-line);
   background: var(--carbon-2);
   color: var(--white);
   font-family: var(--font);
-  font-size: var(--fs-caption);
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.ds-jump-pill:hover {
+.ds-cmd-btn:hover {
+  background: var(--carbon-3);
+}
+
+.ds-cmd-btn.is-active {
   border-color: var(--accent-bright);
   color: var(--accent-bright);
 }
 
-.ds-hero__telemetry {
+/* ==========================================================================
+   Main Stack
+   ========================================================================== */
+.ds-canvas-stack {
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--sp-3);
+  gap: var(--sp-10);
 }
 
-.ds-hero__mini-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-3);
-}
-
-.ds-mini-spec {
-  background: var(--carbon-2);
-  border: 1px solid var(--carbon-line);
-  border-radius: var(--r-md);
-  padding: var(--sp-3) var(--sp-4);
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ds-mini-spec span {
-  font-family: var(--mono);
-  font-size: var(--fs-label);
-  color: var(--muted-on-dark);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-}
-
-.ds-mini-spec strong {
-  font-family: var(--display);
-  font-size: var(--fs-sm);
-  color: var(--white);
-}
-
-/* Section Layout & Grids */
-.ds-section {
+.ds-section-block {
   scroll-margin-top: calc(var(--shell-h) + 84px);
 }
 
 .ds-grid-2 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--sp-4);
-}
-
-.ds-grid-3 {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--sp-4);
 }
 
@@ -340,15 +190,15 @@
   margin-bottom: var(--sp-4);
 }
 
-.ds-dark-title {
-  margin: 4px 0 0;
-  font-family: var(--display);
-  font-size: var(--fs-lg);
-  color: var(--white);
+.ds-muted-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
 }
 
 .ds-dark-copy {
-  margin: var(--sp-2) 0 var(--sp-4);
+  margin: var(--sp-3) 0 var(--sp-4);
   color: var(--muted-on-dark-2);
   font-size: var(--fs-sm);
   line-height: 1.5;
@@ -361,121 +211,755 @@
   border-radius: 6px;
 }
 
-.ds-muted-copy {
-  margin: 0;
-  color: var(--muted);
-  font-size: var(--fs-sm);
-  line-height: 1.5;
-}
-
-/* Brand Section */
-.ds-mark-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--sp-3);
-  margin-top: var(--sp-3);
-}
-
-.ds-mark-tile {
-  padding: var(--sp-4);
-  border-radius: var(--r-md);
-  border: 1px solid var(--line);
+.ds-tag-row {
   display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--sp-2);
+}
+
+/* ==========================================================================
+   Hero Bento Stage (Editorial Photography + Live Phone Mockup)
+   ========================================================================== */
+.ds-hero-bento {
+  scroll-margin-top: calc(var(--shell-h) + 84px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(340px, 0.95fr);
+  gap: var(--sp-4);
+  align-items: stretch;
+}
+
+.ds-hero-visual-card {
+  position: relative;
+  min-height: 520px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--carbon);
+  border: 1px solid var(--carbon-line);
+  box-shadow: var(--sh-ink);
+  display: flex;
+}
+
+.ds-hero-visual-card__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.ds-hero-visual-card__scrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 11, 13, 0.72) 0%, rgba(10, 11, 13, 0.25) 42%, rgba(10, 11, 13, 0.94) 100%),
+    linear-gradient(90deg, rgba(10, 11, 13, 0.72) 0%, transparent 70%);
+}
+
+.ds-hero-visual-card__content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding: var(--sp-7);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-6);
+}
+
+.ds-hero-top-meta {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-3);
+  gap: var(--sp-2);
 }
 
-.ds-mark-tile--light {
-  background: var(--paper-4);
-  color: var(--ink);
-}
-
-.ds-mark-tile--dark {
-  background: var(--carbon);
-  color: var(--white);
-  border-color: var(--carbon-line);
-}
-
-.ds-mark-tile code {
-  font-family: var(--mono);
-  font-size: var(--fs-caption);
-  color: inherit;
-  opacity: 0.78;
-}
-
-.ds-mark-row {
-  display: flex;
+.ds-badge-glow {
+  display: inline-flex;
   align-items: center;
-  gap: var(--sp-4);
-}
-
-.ds-app-icon-tile {
-  width: 44px;
-  height: 44px;
-  border-radius: 13px;
-  background: var(--accent);
-  display: grid;
-  place-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--pill);
+  background: rgba(212, 33, 39, 0.92);
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
   box-shadow: var(--sh-accent);
 }
 
-.ds-brand-lab {
+.ds-mono-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: var(--pill);
+  background: rgba(20, 22, 27, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--muted-on-dark-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+
+.ds-hero-headline-block {
+  margin-top: auto;
+  max-width: 58ch;
+}
+
+.ds-hero-headline-block h1 {
+  margin: 0 0 var(--sp-3);
+  font-family: var(--display);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.03;
+  letter-spacing: -0.045em;
+  color: var(--white);
+}
+
+.ds-hero-headline-block p {
+  margin: 0;
+  font-size: var(--fs-md);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.ds-hero-kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+  padding-top: var(--sp-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.ds-hero-kpi {
   display: flex;
   flex-direction: column;
-  gap: var(--sp-4);
+  gap: 2px;
 }
 
-.ds-drop-preview {
+.ds-hero-kpi strong {
+  font-family: var(--display);
+  font-size: var(--fs-xl);
+  font-weight: 800;
+  color: var(--white);
+  letter-spacing: -0.03em;
+}
+
+.ds-hero-kpi strong.is-crimson {
+  color: var(--accent-bright);
+}
+
+.ds-hero-kpi span {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted-on-dark);
+}
+
+/* Right Interactive Hardware Phone Stage */
+.ds-hero-device-stage {
+  background: var(--carbon);
+  color: var(--white);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--carbon-line);
+  box-shadow: var(--sh-ink);
+  padding: var(--sp-5);
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: var(--sp-4);
-  background: var(--carbon-2);
-  border: 1px solid var(--carbon-line);
-  border-radius: var(--r-md);
-  padding: var(--sp-4);
+  background-image: radial-gradient(circle at 50% 0%, rgba(212, 33, 39, 0.18), transparent 62%);
 }
 
-.ds-drop-slider {
-  flex: 1;
+.ds-device-stage-head {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+}
+
+.ds-device-stage-head strong {
+  display: block;
+  font-family: var(--display);
+  font-size: var(--fs-md);
+  color: var(--white);
+}
+
+.ds-pill-segment {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--pill);
+  background: var(--carbon-2);
+  border: 1px solid var(--carbon-line);
+}
+
+.ds-pill-segment button {
+  border: 0;
+  background: transparent;
+  color: var(--muted-on-dark);
+  padding: 6px 11px;
+  border-radius: var(--pill);
+  font-family: var(--font);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ds-pill-segment button.is-active {
+  background: var(--accent);
+  color: var(--white);
+}
+
+.ds-iphone-bezel {
+  width: 100%;
+  max-width: 312px;
+  border-radius: 40px;
+  padding: 10px;
+  background: linear-gradient(145deg, #272A34, #0D0F14);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55);
+}
+
+.ds-iphone-notch {
+  width: 84px;
+  height: 18px;
+  border-radius: var(--pill);
+  background: #0A0B0D;
+  margin: 0 auto 8px;
+}
+
+.ds-iphone-screen {
+  background: var(--white);
+  color: var(--ink);
+  border-radius: 30px;
+  padding: 14px;
+  min-height: 392px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ds-phone-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ds-phone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ds-phone-header h4 {
+  margin: 2px 0 0;
+  font-family: var(--display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.ds-phone-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--carbon);
+  color: var(--white);
+  display: grid;
+  place-items: center;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ds-phone-mini-map .route-map {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.ds-phone-bento-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ds-phone-stat {
+  border-radius: 16px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ds-phone-stat.is-light {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.ds-phone-stat.is-dark {
+  background: var(--carbon);
+  color: var(--white);
+}
+
+.ds-phone-stat span {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.72;
+}
+
+.ds-phone-stat strong {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ds-phone-sanctuary-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  height: 124px;
+}
+
+.ds-phone-sanctuary-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ds-phone-sanctuary-card .status-chip {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+}
+
+.ds-phone-copy {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.ds-phone-dock {
+  margin: 0 !important;
+  padding: 7px 10px !important;
+}
+
+.ds-phone-dock .dock-circle-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* ==========================================================================
+   01 · Visual Triptych & Interactive Brand Lab
+   ========================================================================== */
+.ds-visual-triptych {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.ds-art-card {
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--sh-1);
+}
+
+.ds-art-card--light {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ds-art-card--dark {
+  background: var(--carbon);
+  color: var(--white);
+  border-color: var(--carbon-line);
+  box-shadow: var(--sh-ink);
+}
+
+.ds-art-card__media {
+  position: relative;
+  height: 205px;
+  overflow: hidden;
+}
+
+.ds-art-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-slow) var(--ease-standard);
+}
+
+.ds-art-card:hover .ds-art-card__media img {
+  transform: scale(1.03);
+}
+
+.ds-art-chip {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  padding: 5px 10px;
+  border-radius: var(--pill);
+  background: rgba(10, 11, 13, 0.78);
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+
+.ds-art-chip.is-crimson {
+  background: rgba(212, 33, 39, 0.9);
+}
+
+.ds-art-card__body {
+  padding: var(--sp-5);
   display: flex;
   flex-direction: column;
   gap: var(--sp-2);
 }
 
-.ds-drop-slider label {
+.ds-art-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.ds-art-card__head h3 {
+  margin: 0;
+  font-family: var(--display);
+  font-size: var(--fs-lg);
+}
+
+.ds-art-card__body p {
+  margin: 0;
   font-size: var(--fs-sm);
-  color: var(--muted-on-dark-2);
+  line-height: 1.5;
+  opacity: 0.8;
 }
 
-.ds-drop-slider input[type='range'] {
-  width: 100%;
-  accent-color: var(--accent-bright);
+/* Interactive Center Brand Lab Card */
+.ds-brand-lab-card {
+  background: var(--carbon);
+  color: var(--white);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--carbon-line);
+  padding: var(--sp-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  box-shadow: var(--sh-ink);
 }
 
-.ds-ecg-preview {
+.ds-brand-lab-card__top {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.ds-lab-pulse-stage {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--sp-4);
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
   background: var(--carbon-2);
   border: 1px solid var(--carbon-line);
-  border-radius: var(--r-md);
-  padding: var(--sp-3) var(--sp-4);
 }
 
 .ds-ecg-disc {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--pill);
   background: var(--accent);
   display: grid;
   place-items: center;
+  flex: none;
   box-shadow: var(--sh-accent);
   animation: splash-heartbeat 1.5s var(--ease-standard) infinite;
 }
 
-/* Color Swatches & WCAG Matrix */
+.ds-mini-replay {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--carbon-line);
+  background: var(--carbon-3);
+  color: var(--white);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.ds-lab-lockups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2);
+}
+
+.ds-lab-lockup {
+  padding: var(--sp-3);
+  border-radius: var(--r-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-lab-lockup.is-light {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.ds-lab-lockup.is-dark {
+  background: var(--carbon-2);
+  border: 1px solid var(--carbon-line);
+  color: var(--white);
+}
+
+.ds-lab-lockup code {
+  font-family: var(--mono);
+  font-size: 11px;
+  opacity: 0.72;
+}
+
+.ds-lab-drop-box {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--r-md);
+  background: var(--carbon-2);
+  border: 1px solid var(--carbon-line);
+}
+
+.ds-lab-drop-controls {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-lab-drop-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-caption);
+  color: var(--muted-on-dark-2);
+}
+
+.ds-lab-drop-meta strong {
+  color: var(--accent-bright);
+  font-family: var(--mono);
+}
+
+.ds-lab-drop-controls input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent-bright);
+}
+
+.ds-lab-assets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* ==========================================================================
+   02 · Iconography Studio
+   ========================================================================== */
+.ds-icon-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.ds-icon-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.ds-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--paper-2);
+  padding: 4px;
+  border-radius: var(--pill);
+}
+
+.ds-control-group span {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 0 8px;
+}
+
+.ds-mini-opt {
+  border: 0;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: var(--pill);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.ds-mini-opt.is-active {
+  background: var(--carbon);
+  color: var(--white);
+}
+
+.ds-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(146px, 1fr));
+  gap: var(--sp-3);
+}
+
+.ds-icon-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: var(--sp-3);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--paper-4);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--dur-instant) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
+}
+
+.ds-icon-tile:hover {
+  transform: translateY(-2px);
+  border-color: var(--carbon);
+  background: var(--paper);
+  box-shadow: var(--sh-2);
+}
+
+.ds-icon-tile.is-copied {
+  border-color: var(--accent);
+  background: var(--accent-ghost);
+}
+
+.ds-icon-well {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.ds-icon-well.is-carbon {
+  background: var(--carbon);
+  color: var(--white);
+}
+
+.ds-icon-well.is-crimson {
+  background: var(--accent);
+  color: var(--white);
+  box-shadow: 0 6px 14px rgba(212, 33, 39, 0.25);
+}
+
+.ds-icon-well.is-paper {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+}
+
+.ds-icon-well.is-raw {
+  background: transparent;
+  color: var(--ink);
+}
+
+.ds-icon-tile strong {
+  font-family: var(--display);
+  font-size: var(--fs-sm);
+  color: var(--ink);
+}
+
+.ds-icon-tile small {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* ==========================================================================
+   03 · Color Monoliths & WCAG AA Matrix
+   ========================================================================== */
+.ds-monolith-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-3);
+}
+
+.ds-monolith-card {
+  min-height: 176px;
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  border: 1px solid rgba(10, 11, 13, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: var(--sh-2);
+  transition: transform var(--dur-fast) var(--ease-standard);
+}
+
+.ds-monolith-card:hover {
+  transform: translateY(-3px);
+}
+
+.ds-monolith-card__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: var(--fs-caption);
+  opacity: 0.78;
+}
+
+.ds-monolith-card__bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ds-monolith-card__bottom strong {
+  font-family: var(--display);
+  font-size: var(--fs-lg);
+}
+
+.ds-monolith-card__bottom code {
+  font-family: var(--mono);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.ds-monolith-card__bottom small {
+  font-size: 11px;
+  opacity: 0.78;
+}
+
 .ds-color-groups {
   display: flex;
   flex-direction: column;
@@ -509,7 +993,7 @@
 }
 
 .ds-swatch-chip {
-  height: 68px;
+  height: 64px;
   padding: var(--sp-3);
   display: flex;
   align-items: flex-end;
@@ -632,12 +1116,62 @@
   color: var(--muted);
 }
 
-/* Typography */
-.ds-tag-row {
+/* ==========================================================================
+   04 · Typography Specimen Wall
+   ========================================================================== */
+.ds-type-specimen-wall {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sp-4);
+}
+
+.ds-type-poster {
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: var(--sp-3);
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.ds-type-poster.is-dark {
+  background: var(--carbon);
+  color: var(--white);
+  box-shadow: var(--sh-ink);
+}
+
+.ds-type-poster.is-light {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-1);
+}
+
+.ds-type-poster.is-crimson {
+  background: var(--accent);
+  color: var(--white);
+  box-shadow: var(--sh-accent);
+}
+
+.ds-type-poster__tag {
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.ds-type-poster__glyph {
+  font-size: 72px;
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.ds-type-poster p {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.45;
+  opacity: 0.86;
 }
 
 .ds-type-scale-card {
@@ -704,7 +1238,9 @@
   font-size: var(--fs-caption);
 }
 
-/* Foundations: Spacing, Radii, Elevation, Motion */
+/* ==========================================================================
+   05 · Foundations
+   ========================================================================== */
 .ds-spacing-list {
   display: flex;
   flex-direction: column;
@@ -854,7 +1390,7 @@
 }
 
 .ds-motion-puck.is-end {
-  transform: translateX(calc(220px));
+  transform: translateX(220px);
 }
 
 .ds-z-list {
@@ -878,7 +1414,9 @@
   color: var(--accent);
 }
 
-/* Primitives */
+/* ==========================================================================
+   06 · Primitives & 07 · Patterns
+   ========================================================================== */
 .ds-btn-showcase,
 .ds-form-showcase {
   display: flex;
@@ -921,9 +1459,9 @@
 .ds-dock-inline {
   position: static !important;
   transform: none !important;
+  margin: 0 !important;
 }
 
-/* Patterns & 14 Status States */
 .ds-status-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -935,6 +1473,7 @@
 
 .ds-filter-tabs {
   display: inline-flex;
+  flex-wrap: wrap;
   background: var(--paper-2);
   padding: 4px;
   border-radius: var(--pill);
@@ -1053,7 +1592,9 @@
   color: var(--muted);
 }
 
-/* Maps Section */
+/* ==========================================================================
+   08 · Stealth Maps
+   ========================================================================== */
 .ds-map-studio {
   display: grid;
   grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
@@ -1087,6 +1628,33 @@
   overflow: hidden;
 }
 
+.ds-map-art-thumb {
+  position: relative;
+  height: 118px;
+  border-radius: var(--r-md);
+  overflow: hidden;
+  border: 1px solid var(--carbon-line);
+}
+
+.ds-map-art-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ds-map-art-thumb span {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  padding: 4px 10px;
+  border-radius: var(--pill);
+  background: rgba(10, 11, 13, 0.8);
+  color: var(--white);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
 .ds-sparkline-card {
   background: var(--carbon-2);
   border: 1px solid var(--carbon-line);
@@ -1108,22 +1676,114 @@
   display: block;
 }
 
-/* Accessibility & Architecture */
-.ds-role-shell-card {
+/* ==========================================================================
+   09 · Dual-Chassis Schematics & Accessibility
+   ========================================================================== */
+.ds-chassis-card {
   display: flex;
-  gap: var(--sp-3);
-  align-items: flex-start;
+  align-items: center;
+  gap: var(--sp-4);
 }
 
-.ds-role-shell-card h3 {
+.ds-chassis-wire {
+  width: 84px;
+  height: 108px;
+  border-radius: 16px;
+  background: var(--carbon);
+  padding: 8px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-chassis-wire.is-phone {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ds-wire-pill {
+  width: 26px;
+  height: 5px;
+  border-radius: var(--pill);
+  background: var(--carbon-3);
+}
+
+.ds-wire-hero {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--carbon-3);
+}
+
+.ds-wire-cta {
+  width: 100%;
+  height: 14px;
+  border-radius: var(--pill);
+  background: var(--accent);
+}
+
+.ds-wire-dock {
+  width: 90%;
+  height: 12px;
+  border-radius: var(--pill);
+  background: var(--white);
+}
+
+.ds-chassis-wire.is-console {
+  width: 112px;
+  flex-direction: row;
+  padding: 7px;
+  border-radius: 12px;
+}
+
+.ds-wire-rail {
+  width: 24px;
+  height: 100%;
+  border-radius: 7px;
+  background: var(--carbon-3);
+}
+
+.ds-wire-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ds-wire-top {
+  height: 22px;
+  border-radius: 6px;
+  background: var(--accent);
+}
+
+.ds-wire-table {
+  flex: 1;
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.ds-role-shell-copy h3 {
   margin: 4px 0 6px;
 }
 
-.ds-role-shell-card p {
+.ds-role-shell-copy p {
   margin: 0;
   color: var(--muted);
   font-size: var(--fs-sm);
   line-height: 1.5;
+}
+
+.ds-role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: var(--fs-label);
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
 }
 
 .ds-a11y-grid {
@@ -1146,7 +1806,7 @@
   font-size: var(--fs-md);
 }
 
-/* Modal demo */
+/* Modal Demo */
 .ds-modal-demo-body {
   display: flex;
   flex-direction: column;
@@ -1171,32 +1831,29 @@
   gap: var(--sp-2);
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 980px) {
-  .ds-shell {
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+@media (max-width: 1120px) {
+  .ds-hero-bento {
     grid-template-columns: 1fr;
-    padding: var(--sp-4) var(--sp-4) 0;
   }
 
-  .ds-nav-rail {
-    position: static;
+  .ds-visual-triptych {
+    grid-template-columns: 1fr;
   }
 
-  .ds-nav-rail__list {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 6px;
-    padding-bottom: 4px;
+  .ds-monolith-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .ds-nav-rail__link {
-    width: auto;
-    white-space: nowrap;
+  .ds-type-specimen-wall {
+    grid-template-columns: 1fr;
   }
+}
 
-  .ds-hero__grid,
+@media (max-width: 960px) {
   .ds-grid-2,
-  .ds-grid-3,
   .ds-lifecycle-preview,
   .ds-map-studio {
     grid-template-columns: 1fr;
@@ -1204,24 +1861,42 @@
 }
 
 @media (max-width: 760px) {
-  .ds-studio-bar {
+  .ds-studio {
+    padding: var(--sp-3) var(--sp-3) var(--sp-16);
+  }
+
+  .ds-command-wrap {
     position: static;
   }
 
-  .ds-search-box {
-    flex: 1 1 100%;
+  .ds-command-actions {
+    width: 100%;
+    justify-content: space-between;
   }
 
-  .ds-search-box input {
+  .ds-cmd-search {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .ds-cmd-search input {
     font-size: 16px;
   }
 
-  .ds-hero {
+  .ds-hero-visual-card {
+    min-height: 430px;
+  }
+
+  .ds-hero-visual-card__content {
     padding: var(--sp-5);
   }
 
-  .ds-hero__copy h1 {
-    font-size: var(--fs-2xl);
+  .ds-hero-kpi-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ds-monolith-grid {
+    grid-template-columns: 1fr;
   }
 
   .ds-spacing-row {
@@ -1236,6 +1911,11 @@
     grid-template-columns: 1fr;
   }
 
+  .ds-chassis-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .ds-motion-puck.is-end {
     transform: translateX(130px);
   }
@@ -1244,7 +1924,8 @@
 @media (prefers-reduced-motion: reduce) {
   .ds-ecg-disc,
   .ds-motion-puck,
-  .ds-ecg-animated path {
+  .ds-ecg-animated path,
+  .ds-art-card__media img {
     animation: none !important;
     transition: none !important;
   }

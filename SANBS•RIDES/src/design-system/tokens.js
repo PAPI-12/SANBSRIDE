@@ -15,6 +15,12 @@ export const DESIGN_SYSTEM_META = {
   minTouchTargetPx: 44,
 };
 
+export const STUDIO_MEDIA = {
+  heroMobility: '/design-system/hero-mobility.png',
+  donorSanctuary: '/design-system/donor-centre-editorial.png',
+  stealthGrid: '/design-system/stealth-city-grid.png',
+};
+
 export const BRAND_ARTWORK = {
   viewBox: '0 0 76.02 100',
   aspectRatio: 76.02 / 100,
