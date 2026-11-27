@@ -87,6 +87,13 @@ function routeScreenHeading(path, fraction) {
   return -90;
 }
 
+function nextArrowAngle(previousAngle, screenHeading) {
+  const target = screenHeading + 90;
+  if (previousAngle == null) return ((target % 360) + 360) % 360;
+  const delta = (((target - previousAngle) % 360) + 540) % 360 - 180;
+  return previousAngle + delta;
+}
+
 export default function JourneyMap({
   booking,
   leg = 'outbound',
@@ -109,6 +116,7 @@ export default function JourneyMap({
   const [mapError, setMapError] = useState('');
   const [approximate, setApproximate] = useState(false);
   const [retryToken, setRetryToken] = useState(0);
+  const [following, setFollowing] = useState(navigationStyle);
   const [pageVisible, setPageVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
   const progressRef = useRef(0);
   const fillProgressRef = useRef(0);
@@ -165,7 +173,12 @@ export default function JourneyMap({
         if (disposed || !hostRef.current) return;
         const path = route.path;
         if (!disposed) setApproximate(Boolean(route.approximate));
-        mapInstance = L.map(hostRef.current, { zoomControl: false, attributionControl: true, scrollWheelZoom });
+        mapInstance = L.map(hostRef.current, {
+          zoomControl: false,
+          attributionControl: true,
+          scrollWheelZoom,
+          ...(navigationStyle ? { inertia: false, bounceAtZoomLimits: false } : {}),
+        });
         L.tileLayer(OSM_TILES, { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(mapInstance);
         const pinIcon = (html, size = [34, 34], anchor = [17, 17]) => L.divIcon({ className: 'journey-pin-wrap', html, iconSize: size, iconAnchor: anchor });
         if (navigationStyle) {
@@ -197,6 +210,23 @@ export default function JourneyMap({
           opacity: hasDriverRef.current ? 1 : 0,
         }).addTo(mapInstance);
         const fitBoundsList = [...path, [route.pickup.lat, route.pickup.lon], [route.centre.lat, route.centre.lon]];
+        const keepDriverInFocus = (point, targetZoom = null) => {
+          if (live.zooming) return;
+          const zoomLevel = Number.isFinite(targetZoom) ? targetZoom : (mapInstance.getZoom() || 17);
+          if (!navigationStyle) {
+            mapInstance.setView(point, zoomLevel, { animate: false });
+            return;
+          }
+          const size = mapInstance.getSize();
+          if (!size.x || !size.y) {
+            mapInstance.setView(point, zoomLevel, { animate: false });
+            return;
+          }
+          // Anchor the car cleanly in the open map window between the turn banner and bottom sheet.
+          const projected = mapInstance.project(point, zoomLevel);
+          const targetCenter = mapInstance.unproject([projected.x, projected.y - size.y * 0.04], zoomLevel);
+          mapInstance.setView(targetCenter, zoomLevel, { animate: false });
+        };
         const live = {
           map: mapInstance,
           path,
@@ -205,22 +235,16 @@ export default function JourneyMap({
           travelled,
           follow: navigationStyle,
           userAdjusted: false,
+          zooming: false,
+          arrowAngle: null,
+          lastPoint: path[0],
+          keepDriverInFocus,
           dropLiquid: dropMarker.getElement()?.querySelector('.journey-drop-liquid') || null,
         };
         liveRef.current = live;
-        const keepDriverInFocus = (point) => {
-          mapInstance.setView(point, navigationStyle ? 17 : mapInstance.getZoom(), { animate: false });
-          if (!navigationStyle) return;
-          const size = mapInstance.getSize();
-          if (!size.x || !size.y) return;
-          const markerPoint = mapInstance.latLngToContainerPoint(point);
-          mapInstance.panBy([
-            markerPoint.x - size.x / 2,
-            markerPoint.y - size.y * 0.72,
-          ], { animate: false });
-        };
+        setFollowing(navigationStyle);
         if (navigationStyle) {
-          keepDriverInFocus(pointAlongRoute(path, progressRef.current).point);
+          keepDriverInFocus(pointAlongRoute(path, progressRef.current).point, 17);
         } else {
           fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
         }
@@ -228,22 +252,20 @@ export default function JourneyMap({
           const { point: routePoint, travelled: line } = pointAlongRoute(path, nextProgress);
           if (navigationStyle && hostRef.current) {
             const screenHeading = routeScreenHeading(path, nextProgress);
-            const mapRotation = ((-90 - screenHeading + 540) % 360) - 180;
-            hostRef.current.style.setProperty('--driver-route-rotation', `${mapRotation}deg`);
+            live.arrowAngle = nextArrowAngle(live.arrowAngle, screenHeading);
+            hostRef.current.style.setProperty('--driver-arrow-rotation', `${live.arrowAngle}deg`);
           }
           const fix = driverPositionRef.current;
           const hasLiveFix = Number.isFinite(Number(fix?.lat)) && Number.isFinite(Number(fix?.lon))
             && Math.abs(Number(fix.lat)) <= 90 && Math.abs(Number(fix.lon)) <= 180;
           const point = hasLiveFix ? [Number(fix.lat), Number(fix.lon)] : routePoint;
+          live.lastPoint = point;
           car.setLatLng(point);
           travelled.setLatLngs([path[0], ...line].filter((item, index, array) => index === 0 || item[0] !== array[index - 1][0] || item[1] !== array[index - 1][1]));
           live.dropLiquid?.setAttribute('y', String(30 * (1 - Math.max(0, Math.min(fillProgress, 1)))));
           if (live.follow) {
             if (navigationStyle) {
               keepDriverInFocus(point);
-              const focusPoint = mapInstance.latLngToContainerPoint(point);
-              hostRef.current?.style.setProperty('--camera-origin-x', `${focusPoint.x}px`);
-              hostRef.current?.style.setProperty('--camera-origin-y', `${focusPoint.y}px`);
             } else {
               mapInstance.panTo(point, { animate: true });
             }
@@ -254,12 +276,24 @@ export default function JourneyMap({
         mapInstance.on('dragstart', () => {
           live.follow = false;
           live.userAdjusted = true;
+          setFollowing(false);
+        });
+        mapInstance.on('zoomstart', () => {
+          live.zooming = true;
+        });
+        mapInstance.on('zoomend', () => {
+          live.zooming = false;
+          if (navigationStyle && live.follow && live.lastPoint) {
+            keepDriverInFocus(live.lastPoint);
+          }
         });
         if (typeof ResizeObserver !== 'undefined') {
           resizeObserver = new ResizeObserver(() => {
             if (disposed || !mapInstance) return;
             mapInstance.invalidateSize({ pan: false });
-            if (!navigationStyle && !live.userAdjusted) {
+            if (navigationStyle) {
+              if (live.follow && live.lastPoint) keepDriverInFocus(live.lastPoint);
+            } else if (!live.userAdjusted) {
               fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
             }
           });
@@ -268,7 +302,9 @@ export default function JourneyMap({
         window.setTimeout(() => {
           if (disposed || !mapInstance) return;
           mapInstance.invalidateSize({ pan: false });
-          if (!navigationStyle && !live.userAdjusted) {
+          if (navigationStyle) {
+            if (live.follow) keepDriverInFocus(live.lastPoint, mapInstance.getZoom() || 17);
+          } else if (!live.userAdjusted) {
             fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
           }
           live.placeCar(progressRef.current, fillProgressRef.current);
@@ -295,29 +331,35 @@ export default function JourneyMap({
     const live = liveRef.current;
     if (!focusToken || !live) return;
     live.follow = true;
+    live.userAdjusted = false;
+    setFollowing(true);
     const position = driverPositionRef.current;
     const point = Number.isFinite(Number(position?.lat)) && Number.isFinite(Number(position?.lon))
       ? [Number(position.lat), Number(position.lon)]
       : pointAlongRoute(live.path, progressRef.current).point;
-    live.map.flyTo(point, 16, { duration: 0.8 });
-  }, [focusToken]);
+    if (navigationStyle) live.keepDriverInFocus(point, 17);
+    else live.map.flyTo(point, 16, { duration: 0.8 });
+  }, [focusToken, navigationStyle]);
 
   const followLive = () => {
     const live = liveRef.current;
     if (!live) return;
     live.follow = true;
-    live.userAdjusted = true;
+    live.userAdjusted = false;
+    setFollowing(true);
     const position = driverPositionRef.current;
     const point = Number.isFinite(Number(position?.lat)) && Number.isFinite(Number(position?.lon))
       ? [Number(position.lat), Number(position.lon)]
       : pointAlongRoute(live.path, progressRef.current).point;
-    live.map.flyTo(point, 16, { duration: 0.8 });
+    if (navigationStyle) live.keepDriverInFocus(point, 17);
+    else live.map.flyTo(point, 16, { duration: 0.8 });
   };
   const recenter = () => {
     const live = liveRef.current;
     if (!live) return;
     live.follow = false;
     live.userAdjusted = false;
+    setFollowing(false);
     fitRoute(live.map, [...live.path, live.pinBounds?.[0], live.pinBounds?.[1]].filter(Boolean), fitOptionsRef.current);
   };
   const zoom = (direction) => {
@@ -339,7 +381,7 @@ export default function JourneyMap({
     {!mapError && approximate && <div className="journey-approx-chip" role="status">Approximate route · road directions unavailable</div>}
     {controls && !mapError && <>
       <button className="journey-compass" type="button" onClick={recenter} aria-label="Recenter map"><Compass size={20} aria-hidden="true" /></button>
-      {liveControl && <button className="journey-live-control" type="button" onClick={followLive} aria-label="Follow live driver location"><LocateFixed size={20} /><span>Live</span></button>}
+      {liveControl && <button className={`journey-live-control${following ? ' is-following' : ''}`} type="button" onClick={followLive} aria-label="Follow live driver location" aria-pressed={following}><LocateFixed size={20} /><span>Live</span></button>}
       <div className="journey-zoom" role="group" aria-label="Map zoom">
         <button type="button" onClick={() => zoom(1)} aria-label="Zoom in">+</button>
         <button type="button" onClick={() => zoom(-1)} aria-label="Zoom out">−</button>

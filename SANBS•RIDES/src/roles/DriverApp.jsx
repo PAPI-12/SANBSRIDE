@@ -452,7 +452,7 @@ function DriverNavigation({ booking, leg, legName, returnTrip, driverName, route
       <span>{navigating ? 'LIVE NAVIGATION' : 'DRIVER NAVIGATION'}</span>
       <span className={`driver-nav-live${gpsFresh ? ' is-live' : demoNavigation ? ' is-simulated' : ' is-route-ready'}`}><i /> {gpsFresh ? 'LIVE' : demoNavigation ? 'SIMULATED' : 'ROUTE READY'}</span>
     </header>
-    <div className="driver-navigation-map"><JourneyMap booking={booking} leg={legName} from={routeFrom} to={routeTo} className="driver-navigation-map-canvas" controls liveControl navigationStyle />
+    <div className="driver-navigation-map"><JourneyMap booking={booking} leg={legName} from={routeFrom} to={routeTo} className="driver-navigation-map-canvas" controls liveControl navigationStyle fitPaddingTopLeft={[44, 176]} fitPaddingBottomRight={[44, 240]} />
       <div className="driver-turn-banner" aria-live="polite">
         <span className="driver-turn-symbol" aria-hidden="true"><svg viewBox="0 0 48 48"><path d={direction === 'TURN RIGHT' ? 'M10 42V19c0-5 4-9 9-9h17M27 2l10 8-10 8' : direction === 'TURN LEFT' ? 'M38 42V19c0-5-4-9-9-9H12M21 2 11 10l10 8' : direction === 'ARRIVING' ? 'M24 42V8M12 20l12-12 12 12' : 'M24 42V8M12 20l12-12 12 12'} fill="none" stroke="currentColor" strokeWidth="8" strokeLinecap="square" strokeLinejoin="round"/></svg></span>
         <div className="driver-turn-copy"><span>{waitingAtPickup ? 'ARRIVED' : navigating ? (nearDestination ? formatDistance(remainingMeters) : formatDistance(distanceToTurn)) : routeDetails ? formatDistance(routeDetails.distance) : 'Finding road route'}</span><strong>{waitingAtPickup ? 'Pickup' : movingToCentre && !navigationStarted ? 'Pickup confirmed' : routeStreet}</strong></div>
