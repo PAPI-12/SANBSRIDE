@@ -238,7 +238,7 @@ export function RouteMap({
     <div className={`route-map${compact ? ' route-map-compact' : ''}${dark ? ' route-map-dark' : ''}`}>
       {!hideChrome && <div className="map-overline"><span><MapPin size={12} /> {originLabel} → {destinationLabel}</span><span>STEALTH ROUTE</span></div>}
       <div className="map-art">
-        <svg viewBox="0 0 440 205" role="img" aria-label={`Route from ${from} to ${to}`} preserveAspectRatio="xMidYMid slice">
+        <svg viewBox="0 0 440 205" role="img" aria-label={`Route from ${from} to ${to}`} preserveAspectRatio="xMidYMid meet">
           <rect width="440" height="205" fill={palette.background} />
           <g fill={palette.blocks} stroke={palette.blockStroke} strokeWidth="0.9">
             <path d="M10 10h70v40H10zM104 8h59v45h-59zM184 11h48v37h-48zM255 9h75v42h-75zM353 12h70v48h-70z" />

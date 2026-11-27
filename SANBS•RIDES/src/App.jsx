@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Check, ChevronDown, Car, Heart, LifeBuoy, RotateCcw, ShieldCheck, X } from 'lucide-react';
+import { Bell, Check, ChevronDown, Car, Heart, LifeBuoy, LogOut, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import {
   STORAGE_KEY,
   createInitialState,
@@ -22,9 +22,12 @@ const DriverApp = lazy(() => import('./roles/DriverApp.jsx').then((m) => ({ defa
 const StaffApp = lazy(() => import('./roles/StaffApp.jsx').then((m) => ({ default: m.StaffApp })));
 const OperationsApp = lazy(() => import('./roles/OperationsApp.jsx').then((m) => ({ default: m.OperationsApp })));
 import { BrandDefs, RelativeStamp, SanbsBrand } from './components/Shared.jsx';
+import { AuthFlow } from './components/AuthFlow.jsx';
 
 const ROLE_ORDER = ['donor', 'driver', 'staff', 'operations'];
 const WORKSPACE_ROLE_KEY = `${STORAGE_KEY}:workspace-role`;
+const AUTH_SESSION_KEY = `${STORAGE_KEY}:auth-session`;
+const AUTH_ACCOUNTS_KEY = `${STORAGE_KEY}:accounts`;
 const MAX_DRIVER_PICKUP_ETA_MINUTES = 5;
 const WORKSPACE_LABELS = {
   donor: 'Donor',
@@ -69,6 +72,41 @@ function appendNotification(state, notification) {
   };
 }
 
+function loadAuthSession() {
+  try {
+    const raw = sessionStorage.getItem(AUTH_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.authenticated && ROLE_ORDER.includes(parsed.role)) return parsed;
+  } catch (error) {
+    // Ignore storage read failures and start on the opening screen.
+  }
+  return null;
+}
+
+function loadRegisteredAccounts() {
+  try {
+    const raw = localStorage.getItem(AUTH_ACCOUNTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function formatDisplayName(identifier = '', fallback = 'SANBS Member') {
+  const clean = String(identifier).trim();
+  if (!clean) return fallback;
+  if (clean.includes('@')) {
+    const local = clean.split('@')[0].replace(/[._-]+/g, ' ').trim();
+    if (!local) return fallback;
+    return local.replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  if (/^[\d\s+()-]+$/.test(clean)) return fallback;
+  return clean;
+}
+
 export default function App() {
   const [data, setData] = useState(() => {
     const initial = loadInitialState();
@@ -80,6 +118,9 @@ export default function App() {
     }
     return initial;
   });
+  const [authSession, setAuthSession] = useState(() => loadAuthSession());
+  const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'welcome'));
+  const [registeredAccounts, setRegisteredAccounts] = useState(() => loadRegisteredAccounts());
   const [toast, setToast] = useState(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -167,6 +208,146 @@ export default function App() {
     setData((previous) => ({ ...previous, role }));
     setNotificationsOpen(false);
   }, []);
+
+  const persistAuthSession = useCallback((session) => {
+    setAuthSession(session);
+    try {
+      if (session) sessionStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(session));
+      else sessionStorage.removeItem(AUTH_SESSION_KEY);
+    } catch (error) { /* optional session persistence */ }
+  }, []);
+
+  const enterDemo = useCallback((targetRole) => {
+    const chosenRole = ROLE_ORDER.includes(targetRole) ? targetRole : 'donor';
+    try { sessionStorage.setItem(WORKSPACE_ROLE_KEY, chosenRole); } catch (error) { /* optional per-tab role memory */ }
+    setData((previous) => {
+      const next = { ...previous, role: chosenRole };
+      if (chosenRole === 'donor' && previous.donorProfile?.id !== 'donor-thabo') {
+        next.donorProfile = {
+          id: 'donor-thabo',
+          name: 'Thabo Mokoena',
+          phone: '082 555 0142',
+          pickupAddress: '22 West Street, Sandown, Sandton, Johannesburg',
+          pickupCoordinates: { lat: -26.1072, lon: 28.0546, label: '22 West Street, Sandown, Sandton, Johannesburg' },
+        };
+      }
+      if (chosenRole === 'driver') {
+        next.selectedDriverId = 'driver-james';
+      }
+      return next;
+    });
+    persistAuthSession({ authenticated: true, role: chosenRole, userName: null });
+    setAuthScreen('authenticated');
+    setNotificationsOpen(false);
+    setAccountOpen(false);
+    showToast(`Entered ${WORKSPACE_LABELS[chosenRole]} workspace`);
+  }, [persistAuthSession, showToast]);
+
+  const handleLogin = useCallback(({ role: chosenRole, identifier, account }) => {
+    const nextRole = ROLE_ORDER.includes(chosenRole) ? chosenRole : 'donor';
+    const userName = account?.name || formatDisplayName(identifier, ROLE_ACCOUNTS[nextRole]);
+    try { sessionStorage.setItem(WORKSPACE_ROLE_KEY, nextRole); } catch (error) { /* optional per-tab role memory */ }
+    setData((previous) => {
+      const next = { ...previous, role: nextRole };
+      if (account?.role === 'donor') {
+        next.donorProfile = {
+          ...previous.donorProfile,
+          id: account.donorId || previous.donorProfile?.id || 'donor-thabo',
+          name: account.name,
+          phone: account.phone || previous.donorProfile?.phone,
+          pickupAddress: account.pickupAddress || previous.donorProfile?.pickupAddress,
+          pickupCoordinates: {
+            ...(previous.donorProfile?.pickupCoordinates || { lat: -26.1072, lon: 28.0546 }),
+            label: account.pickupAddress || previous.donorProfile?.pickupAddress,
+          },
+        };
+      } else if (account?.role === 'driver' && account.driverId) {
+        next.selectedDriverId = account.driverId;
+      }
+      return next;
+    });
+    persistAuthSession({ authenticated: true, role: nextRole, userName });
+    setAuthScreen('authenticated');
+    setNotificationsOpen(false);
+    setAccountOpen(false);
+    showToast(`Signed in as ${userName}`);
+  }, [persistAuthSession, showToast]);
+
+  const handleSignup = useCallback((payload) => {
+    const nextRole = payload.role === 'driver' ? 'driver' : 'donor';
+    const initials = payload.name.split(/\s+/).map((part) => part[0]).join('').slice(0, 2).toUpperCase() || 'SR';
+    const donorId = nextRole === 'donor' ? safeId('donor') : null;
+    const driverId = nextRole === 'driver' ? safeId('driver') : null;
+    const account = {
+      id: safeId('acct'),
+      role: nextRole,
+      name: payload.name,
+      phone: payload.phone,
+      email: payload.email,
+      pickupAddress: payload.pickupAddress || '',
+      donorId,
+      driverId,
+      password: payload.password,
+      createdAt: new Date().toISOString(),
+    };
+    setRegisteredAccounts((previous) => {
+      const nextAccounts = [account, ...previous.filter((item) => item.email?.toLowerCase() !== payload.email.toLowerCase())];
+      try { localStorage.setItem(AUTH_ACCOUNTS_KEY, JSON.stringify(nextAccounts)); } catch (error) { /* optional */ }
+      return nextAccounts;
+    });
+    try { sessionStorage.setItem(WORKSPACE_ROLE_KEY, nextRole); } catch (error) { /* optional */ }
+    setData((previous) => {
+      if (nextRole === 'donor') {
+        return {
+          ...previous,
+          role: 'donor',
+          donorProfile: {
+            id: donorId,
+            name: payload.name,
+            phone: payload.phone,
+            pickupAddress: payload.pickupAddress,
+            pickupCoordinates: {
+              ...(previous.donorProfile?.pickupCoordinates || { lat: -26.1072, lon: 28.0546 }),
+              label: payload.pickupAddress,
+            },
+          },
+        };
+      }
+      const newDriver = {
+        id: driverId,
+        name: payload.name,
+        firstName: payload.name.split(/\s+/)[0] || payload.name,
+        type: payload.driverType === 'sanbs' ? 'sanbs' : 'independent',
+        typeLabel: payload.driverType === 'sanbs' ? 'SANBS employed' : 'Independent approved',
+        phone: payload.phone,
+        vehicle: payload.vehicle,
+        registration: payload.registration,
+        verification: 'Verified',
+        online: true,
+        initials,
+        color: 'red',
+        currentCoordinates: { lat: -26.1095, lon: 28.0558 },
+      };
+      return {
+        ...previous,
+        role: 'driver',
+        selectedDriverId: driverId,
+        drivers: [newDriver, ...previous.drivers],
+      };
+    });
+    persistAuthSession({ authenticated: true, role: nextRole, userName: payload.name });
+    setAuthScreen('authenticated');
+    setNotificationsOpen(false);
+    setAccountOpen(false);
+    showToast(`Account created · welcome, ${payload.name.split(/\s+/)[0]}`);
+  }, [persistAuthSession, showToast]);
+
+  const signOut = useCallback(() => {
+    persistAuthSession(null);
+    setAccountOpen(false);
+    setNotificationsOpen(false);
+    setAuthScreen('welcome');
+  }, [persistAuthSession]);
 
   const resetDemo = useCallback(() => {
     if (!window.confirm('Reset all demo bookings, drivers and notifications to the sample state?')) return;
@@ -736,7 +917,7 @@ export default function App() {
     ? (data.donorProfile?.name || ROLE_ACCOUNTS.donor)
     : data.role === 'driver'
       ? (getDriver(data, data.selectedDriverId)?.name || ROLE_ACCOUNTS.driver)
-      : ROLE_ACCOUNTS[data.role];
+      : (authSession?.role === data.role && authSession?.userName) || ROLE_ACCOUNTS[data.role];
   const accountInitials = accountName.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 
   const unreadCount = (data.notifications || []).filter((item) => item.roles.includes(data.role) && !item.readBy.includes(data.role)).length;
@@ -758,6 +939,25 @@ export default function App() {
     const focus = active[0] || relevant[0] || null;
     return focus ? { booking: focus, summary: getJourneySummary(focus), count: active.length } : null;
   }, [data.bookings, data.role, data.donorProfile, data.selectedDriverId]);
+
+  if (authScreen !== 'authenticated') {
+    return (
+      <div className="app-root is-auth-flow">
+        <BrandDefs />
+        <AuthFlow
+          screen={authScreen}
+          defaultRole={data.role}
+          registeredAccounts={registeredAccounts}
+          onNavigate={setAuthScreen}
+          onEnterDemo={enterDemo}
+          onLogin={handleLogin}
+          onSignup={handleSignup}
+          onToast={showToast}
+        />
+        {toast && <div className={`toast toast-${toast.tone}`} role="status"><span className="toast-mark">✓</span>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification"><X size={14} /></button></div>}
+      </div>
+    );
+  }
 
   return (
     <div className={`app-root${data.role === 'donor' || data.role === 'driver' ? ' is-phone-role' : ''}`}>
@@ -818,6 +1018,10 @@ export default function App() {
                 <button type="button" role="menuitem" className="account-menu-item account-menu-reset" onClick={resetDemo}>
                   <span className="account-menu-icon"><RotateCcw size={16} /></span>
                   <span><strong>Reset demo data</strong><small>Restore the sample journeys</small></span>
+                </button>
+                <button type="button" role="menuitem" className="account-menu-item account-menu-reset" onClick={signOut}>
+                  <span className="account-menu-icon"><LogOut size={16} /></span>
+                  <span><strong>Sign out</strong><small>Return to opening screen</small></span>
                 </button>
               </div>
             </>}

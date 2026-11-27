@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import 'leaflet/dist/leaflet.css';
 
 function centrePin(L, selected) {
   const fill = selected ? '#D42127' : '#262A34';
