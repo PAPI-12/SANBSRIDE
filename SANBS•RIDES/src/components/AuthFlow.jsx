@@ -7,6 +7,7 @@ import {
   EyeOff,
   Heart,
   LifeBuoy,
+  Palette,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
@@ -139,6 +140,7 @@ export function AuthFlow({
   onEnterDemo,
   onLogin,
   onSignup,
+  onOpenDesignSystem,
   onToast,
 }) {
   const [role, setRole] = useState(defaultRole);
@@ -244,7 +246,8 @@ export function AuthFlow({
 
   return (
     <div className="auth-minimal-shell">
-      <main className="auth-minimal-card" aria-label={mode === 'login' ? 'Sign in' : 'Sign up'}>
+      <div className="auth-minimal-stack">
+        <main className="auth-minimal-card" aria-label={mode === 'login' ? 'Sign in' : 'Sign up'}>
         <div className="auth-minimal-brand">
           <button
             type="button"
@@ -504,7 +507,18 @@ export function AuthFlow({
             </p>
           </div>
         )}
-      </main>
+        </main>
+        {onOpenDesignSystem && (
+          <button
+            type="button"
+            className="auth-ds-link"
+            onClick={onOpenDesignSystem}
+          >
+            <Palette size={13} aria-hidden="true" />
+            <span>Explore SANBS RIDE Design System</span>
+          </button>
+        )}
+      </div>
     </div>
   );
 }

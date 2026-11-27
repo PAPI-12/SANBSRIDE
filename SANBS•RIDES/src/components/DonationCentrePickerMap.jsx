@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
+import { COLORS, MAP_PALETTE } from '../design-system/tokens.js';
 
 function centrePin(L, selected) {
-  const fill = selected ? '#D42127' : '#262A34';
-  const ring = selected ? '#FFFFFF' : '#D1D5DB';
-  const dot = selected ? '#D42127' : '#6B7280';
-  const html = `<span class="donor-centre-drop${selected ? ' is-selected' : ''}" aria-hidden="true"><svg viewBox="0 0 32 42"><path d="M16 1C7.7 1 1 7.7 1 16c0 10.3 15 25 15 25s15-14.7 15-25C31 7.7 24.3 1 16 1Z" fill="${fill}" stroke="${ring}" stroke-width="2"/><circle cx="16" cy="16" r="5.2" fill="#FFFFFF"/><circle cx="16" cy="16" r="2.3" fill="${dot}"/></svg></span>`;
+  const fill = selected ? MAP_PALETTE.pins.centreSelectedFill : MAP_PALETTE.pins.centreIdleFill;
+  const ring = selected ? MAP_PALETTE.pins.centreSelectedRing : MAP_PALETTE.pins.centreIdleRing;
+  const dot = selected ? MAP_PALETTE.pins.centreSelectedFill : MAP_PALETTE.pins.centreIdleDot;
+  const html = `<span class="donor-centre-drop${selected ? ' is-selected' : ''}" aria-hidden="true"><svg viewBox="0 0 32 42"><path d="M16 1C7.7 1 1 7.7 1 16c0 10.3 15 25 15 25s15-14.7 15-25C31 7.7 24.3 1 16 1Z" fill="${fill}" stroke="${ring}" stroke-width="2"/><circle cx="16" cy="16" r="5.2" fill="${COLORS.white}"/><circle cx="16" cy="16" r="2.3" fill="${dot}"/></svg></span>`;
   return L.divIcon({
     className: 'donor-centre-drop-icon',
     html,

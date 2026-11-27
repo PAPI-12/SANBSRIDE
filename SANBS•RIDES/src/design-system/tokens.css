@@ -1,0 +1,170 @@
+/* ==========================================================================
+   SANBS RIDE — Design System Tokens (CSS Single Source of Truth)
+   Visual language: Monochrome + SANBS Crimson Red + Stealth Dark Maps
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     1. Ink & Carbon Palette
+     ------------------------------------------------------------------------ */
+  --ink: #0A0B0D;
+  --ink-2: #181A20;
+  --ink-3: #2E323B;
+  --carbon: #0A0B0D;
+  --carbon-2: #14161B;
+  --carbon-3: #1F2229;
+  --carbon-line: #262A33;
+  --muted: #5A606D;
+  --muted-2: #646B78;
+  --muted-on-dark: #9CA3AF;
+  --muted-on-dark-2: #B6BDC9;
+
+  /* ------------------------------------------------------------------------
+     2. Neutral Surfaces & Hairlines
+     ------------------------------------------------------------------------ */
+  --canvas: #ECEEF2;
+  --canvas-2: #E2E5EB;
+  --paper: #FFFFFF;
+  --paper-2: #F3F4F6;
+  --paper-3: #EBEDF0;
+  --paper-4: #F6F7F8;
+  --line: #E6E8EC;
+  --line-2: #D4D7DF;
+  --white: #FFFFFF;
+
+  /* ------------------------------------------------------------------------
+     3. Brand Accent — SANBS Crimson Red
+     ------------------------------------------------------------------------ */
+  --accent: #D42127;
+  --accent-dark: #B0171D;
+  --accent-deep: #7C0F13;
+  --accent-bright: #FF4D53;
+  --accent-route: #FF3B42;
+  --accent-soft: #FDECEE;
+  --accent-ghost: #FFF5F5;
+  --accent-border: #F0C4C6;
+  --accent-ink: #FFFFFF;
+
+  /* ------------------------------------------------------------------------
+     4. Semantic Status Tokens
+     ------------------------------------------------------------------------ */
+  --ok: #0F7B4F;
+  --ok-bright: #34D399;
+  --ok-soft: #E6F4EC;
+  --warn: #8A5A00;
+  --warn-bright: #F59E0B;
+  --warn-soft: #FDF3DC;
+  --info: #1B5A8F;
+  --info-soft: #E8F1F9;
+  --violet: #543680;
+  --violet-soft: #EFEAF8;
+  --danger: #A81C13;
+
+  /* ------------------------------------------------------------------------
+     5. Stealth Dark Map Tokens
+     ------------------------------------------------------------------------ */
+  --stealth-bg: #0F1115;
+  --stealth-block: #161920;
+  --stealth-block-stroke: #1D212B;
+  --stealth-road: #1E222C;
+  --stealth-road-edge: #282D38;
+  --stealth-route-base: #2D323E;
+  --stealth-park: #141A18;
+
+  /* ------------------------------------------------------------------------
+     6. Typography & Scale
+     ------------------------------------------------------------------------ */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --fs-3xl: 36px;
+  --fs-2xl: 30px;
+  --fs-xl: 24px;
+  --fs-lg: 19px;
+  --fs-md: 16px;
+  --fs-body: 15px;
+  --fs-sm: 13px;
+  --fs-caption: 12px;
+  --fs-label: 11px;
+
+  --tracking-display: -0.04em;
+  --tracking-label: 0.09em;
+
+  /* ------------------------------------------------------------------------
+     7. Spacing Scale (4px base)
+     ------------------------------------------------------------------------ */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 28px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+
+  /* ------------------------------------------------------------------------
+     8. Border Radii
+     ------------------------------------------------------------------------ */
+  --r-2xs: 8px;
+  --r-xs: 12px;
+  --r-sm: 16px;
+  --r-md: 20px;
+  --r-lg: 24px;
+  --r-xl: 28px;
+  --r-2xl: 34px;
+  --r-device: 46px;
+  --pill: 999px;
+
+  /* ------------------------------------------------------------------------
+     9. Elevation & Shadows
+     ------------------------------------------------------------------------ */
+  --sh-1: 0 1px 2px rgba(10, 11, 13, .05), 0 1px 1px rgba(10, 11, 13, .03);
+  --sh-2: 0 6px 18px rgba(10, 11, 13, .07), 0 1px 3px rgba(10, 11, 13, .04);
+  --sh-3: 0 18px 46px rgba(10, 11, 13, .14), 0 2px 10px rgba(10, 11, 13, .06);
+  --sh-ink: 0 18px 44px rgba(10, 11, 13, .28);
+  --sh-accent: 0 14px 28px rgba(212, 33, 39, .28);
+  --sh-dock: 0 12px 32px rgba(10, 11, 13, .10);
+
+  /* ------------------------------------------------------------------------
+     10. Motion & Easing
+     ------------------------------------------------------------------------ */
+  --dur-instant: 120ms;
+  --dur-fast: 160ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --dur-splash: 2100ms;
+
+  --ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ------------------------------------------------------------------------
+     11. Z-Index Layers
+     ------------------------------------------------------------------------ */
+  --z-header: 60;
+  --z-scrim: 70;
+  --z-menu: 80;
+  --z-popover: 200;
+  --z-drawer: 280;
+  --z-modal: 300;
+  --z-toast: 400;
+  --z-sheet: 1100;
+  --z-nav-overlay: 5000;
+
+  /* ------------------------------------------------------------------------
+     12. Layout, Safe Areas & Accessibility
+     ------------------------------------------------------------------------ */
+  --shell-h: 60px;
+  --phone-w: 390px;
+  --phone-h: 844px;
+  --sidebar-w: 220px;
+  --touch-target: 44px;
+  --focus-ring-light: #D42127;
+  --focus-ring-dark: #FFFFFF;
+  --phone-scale: 1;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}

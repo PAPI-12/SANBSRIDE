@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePhoneScale } from '../phoneScale';
+import { MAP_PALETTE } from '../design-system/tokens.js';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -623,7 +624,7 @@ function DriverActivityChart({ rows, period = 'week', variant = 'bars' }) {
     const fill = `${line} L ${right} ${baseline + 3} L ${left} ${baseline + 3} Z`;
     return <div className={`driver-activity-chart driver-activity-chart-line ${hasActivity ? 'has-activity' : 'is-empty'}`}>
       <svg viewBox={`0 0 ${width} 112`} preserveAspectRatio="none" role="img" aria-label={hasActivity ? `Trip assignments by period: ${buckets.map((bucket) => `${bucket.label} ${bucket.count}`).join(', ')}` : 'No trip assignments in this period'}>
-        <defs><linearGradient id="driver-activity-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#FF4D53" stopOpacity=".28" /><stop offset="1" stopColor="#FF4D53" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="driver-activity-fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor={MAP_PALETTE.chart.darkLine} stopOpacity=".28" /><stop offset="1" stopColor={MAP_PALETTE.chart.darkLine} stopOpacity="0" /></linearGradient></defs>
         <line className="driver-chart-gridline" x1={left} y1={baseline} x2={right} y2={baseline} />
         {hasActivity && <path className="driver-chart-fill" d={fill} />}
         <path className={`driver-chart-line${hasActivity ? '' : ' is-empty'}`} d={line} />

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Check, ChevronDown, Car, Heart, LifeBuoy, LogOut, RotateCcw, ShieldCheck, X } from 'lucide-react';
+import { Bell, Check, ChevronDown, Car, Heart, LifeBuoy, LogOut, Palette, RotateCcw, ShieldCheck, X } from 'lucide-react';
 import {
   STORAGE_KEY,
   createInitialState,
@@ -21,6 +21,7 @@ const DonorApp = lazy(() => import('./roles/DonorApp.jsx').then((m) => ({ defaul
 const DriverApp = lazy(() => import('./roles/DriverApp.jsx').then((m) => ({ default: m.DriverApp })));
 const StaffApp = lazy(() => import('./roles/StaffApp.jsx').then((m) => ({ default: m.StaffApp })));
 const OperationsApp = lazy(() => import('./roles/OperationsApp.jsx').then((m) => ({ default: m.OperationsApp })));
+const DesignSystemView = lazy(() => import('./design-system/DesignSystemView.jsx'));
 import { BrandDefs, RelativeStamp, SanbsBrand } from './components/Shared.jsx';
 import { AuthFlow } from './components/AuthFlow.jsx';
 
@@ -107,6 +108,13 @@ function formatDisplayName(identifier = '', fallback = 'SANBS Member') {
   return clean;
 }
 
+function isDesignSystemRoute() {
+  if (typeof window === 'undefined') return false;
+  const hash = window.location.hash.toLowerCase();
+  const params = new URLSearchParams(window.location.search);
+  return hash === '#design-system' || params.get('view') === 'design-system';
+}
+
 export default function App() {
   const [data, setData] = useState(() => {
     const initial = loadInitialState();
@@ -121,6 +129,7 @@ export default function App() {
   const [authSession, setAuthSession] = useState(() => loadAuthSession());
   const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'splash'));
   const [registeredAccounts, setRegisteredAccounts] = useState(() => loadRegisteredAccounts());
+  const [designSystemOpen, setDesignSystemOpen] = useState(() => isDesignSystemRoute());
   const [toast, setToast] = useState(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -161,6 +170,31 @@ export default function App() {
   }, [data.role]);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  useEffect(() => {
+    const syncRoute = () => setDesignSystemOpen(isDesignSystemRoute());
+    window.addEventListener('hashchange', syncRoute);
+    return () => window.removeEventListener('hashchange', syncRoute);
+  }, []);
+
+  const openDesignSystem = useCallback(() => {
+    setAccountOpen(false);
+    setNotificationsOpen(false);
+    setDesignSystemOpen(true);
+    if (typeof window !== 'undefined' && window.location.hash !== '#design-system') {
+      window.history.replaceState(null, '', '#design-system');
+    }
+  }, []);
+
+  const closeDesignSystem = useCallback(() => {
+    setDesignSystemOpen(false);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.hash = '';
+      if (url.searchParams.get('view') === 'design-system') url.searchParams.delete('view');
+      window.history.replaceState(null, '', url.pathname + url.search);
+    }
+  }, []);
 
   /* Escape closes the open menu or popover and returns focus to its trigger. */
   useEffect(() => {
@@ -961,6 +995,27 @@ export default function App() {
     return focus ? { booking: focus, summary: getJourneySummary(focus), count: active.length } : null;
   }, [data.bookings, data.role, data.donorProfile, data.selectedDriverId]);
 
+  if (designSystemOpen) {
+    return (
+      <div className="app-root">
+        <BrandDefs />
+        <header className="app-header">
+          <div className="app-header-brand"><SanbsBrand light /></div>
+          <div className="app-header-context">
+            <span className="workspace-eyebrow">Design System Studio</span>
+          </div>
+          <div className="app-header-actions">
+            <span className="ds-version-pill">MONOCHROME · CRIMSON</span>
+          </div>
+        </header>
+        <Suspense fallback={<div className="role-loading" role="status">Loading design system…</div>}>
+          <DesignSystemView onBack={closeDesignSystem} onNotify={showToast} />
+        </Suspense>
+        {toast && <div className={`toast toast-${toast.tone}`} role="status"><span className="toast-mark">✓</span>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification"><X size={14} /></button></div>}
+      </div>
+    );
+  }
+
   if (authScreen !== 'authenticated') {
     return (
       <div className="app-root is-auth-flow">
@@ -973,6 +1028,7 @@ export default function App() {
           onEnterDemo={enterDemo}
           onLogin={handleLogin}
           onSignup={handleSignup}
+          onOpenDesignSystem={openDesignSystem}
           onToast={showToast}
         />
         {toast && <div className={`toast toast-${toast.tone}`} role="status"><span className="toast-mark">✓</span>{toast.message}<button type="button" onClick={() => setToast(null)} aria-label="Dismiss notification"><X size={14} /></button></div>}
@@ -1036,6 +1092,10 @@ export default function App() {
                   {data.role === role && <Check size={17} />}
                 </button>)}
                 <div className="account-menu-divider" />
+                <button type="button" role="menuitem" className="account-menu-item" onClick={openDesignSystem}>
+                  <span className="account-menu-icon"><Palette size={16} /></span>
+                  <span><strong>Design System</strong><small>Tokens, UI primitives &amp; WCAG audit</small></span>
+                </button>
                 <button type="button" role="menuitem" className="account-menu-item account-menu-reset" onClick={resetDemo}>
                   <span className="account-menu-icon"><RotateCcw size={16} /></span>
                   <span><strong>Reset demo data</strong><small>Restore the sample journeys</small></span>
