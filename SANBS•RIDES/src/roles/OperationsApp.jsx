@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Activity,
   AlertCircle,
@@ -25,7 +25,6 @@ import {
   formatTime,
   getDriver,
   getEligibleDrivers,
-  legProgress,
   getDriverAvailability,
   getStatusMeta,
 } from '../domain.js';
@@ -33,9 +32,9 @@ import {
   DriverAvatar,
   EmptyState,
   OriginTag,
-  RouteMap,
   StatusChip,
 } from '../components/Shared.jsx';
+import JourneyMap from '../components/JourneyMap.jsx';
 import { AssignDriverModal, BookingDetailPanel } from '../components/WorkflowModals.jsx';
 
 const OPS_NAV = [
@@ -139,8 +138,21 @@ function getAllTripLegs(bookings) {
   return trips;
 }
 
+function shortPlaceLabel(value = '') {
+  return String(value).split(',')[0].trim().replace(/^SANBS\s+/i, '').replace(/\s+Donor Centre$/i, '') || String(value);
+}
+
 function DispatchView({ state, actions, items, activeTrips, openExceptions, onOpen, onAssign, onViewTrips, onViewDrivers, onViewExceptions }) {
   const [selectedKey, setSelectedKey] = useState('');
+  const [isCompactMap, setIsCompactMap] = useState(() => (typeof window !== 'undefined' ? window.innerWidth <= 700 : false));
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined;
+    const mq = window.matchMedia('(max-width: 700px)');
+    const sync = () => setIsCompactMap(mq.matches);
+    sync();
+    mq.addEventListener?.('change', sync);
+    return () => mq.removeEventListener?.('change', sync);
+  }, []);
   const live = activeTrips.slice(0, 4);
   const allSelectable = [...items, ...live];
   const tripKey = (trip) => `${trip.booking.id}-${trip.legName}`;
@@ -209,7 +221,18 @@ function DispatchView({ state, actions, items, activeTrips, openExceptions, onOp
       <section className="dispatch-map-rail" aria-label="Route map">
         <div className="dispatch-map-heading"><div><span className="eyebrow">JOHANNESBURG · ROUTE PREVIEW</span><strong>{areaLabel} · Gauteng</strong></div><span className="map-live-label">LIVE VIEW</span></div>
         <div className="dispatch-map-stage">
-          {selectedBooking ? <RouteMap from={routeFrom} to={routeTo} progress={legProgress(selectedBooking, legName)} reverse={returning} dark={false} helper="Route overview" /> : <div className="dispatch-map-empty" role="status"><span><MapPin size={20} /></span><strong>No route selected</strong><p>Select a queued or in-progress journey to preview its route.</p><button type="button" className="button button-secondary button-small" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
+          {selectedBooking ? <JourneyMap
+            booking={selectedBooking}
+            leg={legName}
+            from={routeFrom}
+            to={routeTo}
+            controls
+            scrollWheelZoom
+            fitPaddingTopLeft={isCompactMap ? [28, 36] : [48, 92]}
+            fitPaddingBottomRight={isCompactMap ? [28, 72] : [344, 84]}
+            maxFitZoom={13}
+            className="dispatch-live-map"
+          /> : <div className="dispatch-map-empty" role="status"><span><MapPin size={20} /></span><strong>No route selected</strong><p>Select a queued or in-progress journey to preview its route.</p><button type="button" className="button button-secondary button-small" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
           {selectedBooking && <aside className="dispatch-map-selected-card" aria-label={selectedDriver ? 'Assigned driver and trip' : 'Driver assignment'}>
             <div className="map-selected-topline"><span>{selectedDriver ? 'DRIVER' : 'DRIVER ASSIGNMENT'}</span>{selected && <StatusChip booking={selectedBooking} compact />}</div>
             {selectedDriver ? <>
@@ -228,23 +251,11 @@ function DispatchView({ state, actions, items, activeTrips, openExceptions, onOp
               <div className="map-selected-actions"><button type="button" className="button button-primary button-wide" onClick={() => selected && needsAssignment ? onAssign(selectedBooking, legName) : onViewTrips()}>{selected && needsAssignment ? 'Assign resource' : 'Browse all trips'} <ArrowRight size={14} /></button>{selected && <button type="button" className="map-change-resource" onClick={() => onOpen(selectedBooking)}>Open journey</button>}</div>
             </>}
           </aside>}
-          {selectedBooking && <div className="map-endpoint map-endpoint-destination" aria-hidden="true">
-            <span className="map-endpoint-pin"><MapPin size={12} /></span>
-            <span className="map-endpoint-copy">
-              <small>{returning ? 'DROP-OFF' : 'DONATION SITE'}</small>
-              <strong>{routeTo}</strong>
-              <span>{returning ? 'Donor home' : `Appointment ${formatTime(selectedBooking.appointment.time)}`}</span>
-            </span>
+          {selectedBooking && <div className="dispatch-route-summary-pill" aria-hidden="true">
+            <span className="summary-pill-point"><i className="is-origin" /><span>{shortPlaceLabel(routeFrom)}</span></span>
+            <ArrowRight size={12} />
+            <span className="summary-pill-point"><i className="is-dest" /><span>{shortPlaceLabel(routeTo)}</span></span>
           </div>}
-          {selectedBooking && <div className="map-endpoint map-endpoint-pickup" aria-hidden="true">
-            <span className="map-endpoint-pin"><MapPin size={12} /></span>
-            <span className="map-endpoint-copy">
-              <small>{returning ? 'PICKUP' : 'DONOR PICKUP'}</small>
-              <strong>{routeFrom}</strong>
-              <span>{returning ? 'SANBS collection site' : `Planned ${formatTime(selectedBooking.pickupTime || '08:45')}`}</span>
-            </span>
-          </div>}
-          {selectedBooking && <div className="dispatch-map-compass" aria-hidden="true"><span>N</span><i /></div>}
         </div>
       </section>
     </div>

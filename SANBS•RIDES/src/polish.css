@@ -1,21 +1,68 @@
 /* ==========================================================================
    SANBS RIDE — review-pass fixes (final layer; loaded last in main.jsx)
-   Each block names the audit finding it resolves. See AUDIT.md.
+   Monochrome + SANBS Crimson Red palette, WCAG AA contrast, touch targets,
+   focus visibility, reduced motion, and layout overflow safeguards.
    ========================================================================== */
 
-/* A11y: visible keyboard focus on every interactive element (console had none). */
+/* A11y: visible keyboard focus on every interactive element. */
 :where(button, a, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 2px solid #D42127;
   outline-offset: 2px;
   border-radius: 6px;
 }
-/* Dark surfaces need a light ring to stay visible. */
-:where(.console-nav-item, .sidebar-user, .ops-model-sidebar, .ops-location-sidebar, .sidebar-rule):focus-visible,
+
+/* Dark carbon surfaces need a bright ring to stay visible. */
+:where(
+  .console-nav-item,
+  .sidebar-user,
+  .ops-model-sidebar,
+  .ops-location-sidebar,
+  .sidebar-rule,
+  .dispatch-side-queue-item,
+  .dispatch-map-selected-card,
+  .donor-stealth-map-card,
+  .donor-stat-tile.is-dark,
+  .donor-telemetry-hero,
+  .layer-dark-pill,
+  .profile-dark-metrics,
+  .arrived-dark-metrics,
+  .arrived-dark-header,
+  .confirmation-ref,
+  .support-contact-block,
+  .donor-help-row,
+  .driver-app-header,
+  .driver-shift-strip,
+  .driver-report-chart-card,
+  .driver-report-metric.metric-highlight,
+  .driver-profile-hero,
+  .driver-profile-trip-card,
+  .driver-turn-banner,
+  .staff-status-item.is-contrast,
+  .staff-approval-line,
+  .exception-aside
+):focus-visible,
+:where(
+  .console-sidebar,
+  .dispatch-route-sidebar,
+  .dispatch-map-selected-card,
+  .donor-telemetry-hero,
+  .layer-dark-pill,
+  .arrived-dark-header,
+  .support-contact-block,
+  .driver-app-header,
+  .driver-report-chart-card,
+  .driver-profile-hero,
+  .driver-profile-trip-card,
+  .driver-turn-banner,
+  .staff-status-item.is-contrast,
+  .staff-approval-line,
+  .exception-aside
+) :where(button, a):focus-visible,
 .app-surface :where(.console-nav-item):focus-visible {
-  outline-color: #F4F5EF;
+  outline-color: #FFFFFF;
 }
 
-/* A11y: honour reduced motion across every stylesheet (previously mobile.css only). */
+/* A11y: honour reduced motion across every stylesheet. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -25,7 +72,7 @@
   }
 }
 
-/* Icons and avatars never squash into ellipses (Operations "SD" avatar). */
+/* Avatars never squash into ellipses. */
 [class*="avatar"], [class*="-avatar"] { flex: none; aspect-ratio: 1 / 1; }
 
 /* Staff and Operations consoles: nothing may force the page wider than the viewport. */
@@ -54,7 +101,6 @@
   }
 }
 
-
 /* Journey map: notice and retry states (friendly errors, no overlap with controls). */
 .journey-map-error {
   position: absolute;
@@ -69,15 +115,15 @@
   width: min(280px, calc(100% - 40px));
   padding: 14px 16px;
   border: 1px solid #F0C4C6;
-  border-radius: 12px;
+  border-radius: 16px;
   background: #FFFFFF;
   color: #7C0F13;
   text-align: center;
   font-size: 12.5px;
   line-height: 1.45;
-  box-shadow: 0 10px 28px rgba(14, 17, 22, .18);
+  box-shadow: 0 12px 28px rgba(10, 11, 13, .28);
 }
-.journey-map-error strong { font-size: 13px; color: #16191F; }
+.journey-map-error strong { font-size: 13px; color: #0A0B0D; }
 .journey-map-retry {
   margin-top: 4px;
   min-height: 40px;
@@ -99,7 +145,7 @@
   max-width: calc(100% - 32px);
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(14, 17, 22, .86);
+  background: rgba(10, 11, 13, .88);
   color: #FFFFFF;
   font-size: 11px;
   font-weight: 600;
@@ -125,7 +171,7 @@
   min-height: 240px;
   display: grid;
   place-items: center;
-  color: #565D65;
+  color: #525965;
   font-size: 13px;
   font-weight: 600;
 }
@@ -134,7 +180,7 @@
 :root { --safe-top: env(safe-area-inset-top, 0px); --safe-bottom: env(safe-area-inset-bottom, 0px); }
 
 /* Phone roles (donor, driver) are bounded to the viewport so the phone frame
-   fits the screen, its bottom navigation stays visible and the scale is
+   fits the screen, its circular dock stays visible and the scale is
    computed from the real space. Consoles keep normal page scrolling. */
 .app-root.is-phone-role { height: 100vh; height: 100dvh; min-height: 0; }
 .app-root.is-phone-role > .role-stage { min-height: 0; overflow: hidden; }
@@ -142,11 +188,19 @@
 .app-root.is-phone-role > .role-stage > .role-panel-driver { min-height: 0; overflow: hidden; }
 .app-root.is-phone-role .mobile-experience-wrap { height: 100%; min-height: 0; }
 
-/* Contrast review (axe-core, WCAG AA): targeted colour fixes on tinted surfaces. */
-.driver-help-icon > span,
-.driver-experience .mobile-bottom-nav > .active[aria-current="page"] > span { color: #A9161B; }
-.donor-experience em, .donor-empty-readout em { color: #5F6673; }
-.sidebar-site-card > div > small { color: #A8AE9C; }
+/* Contrast review (WCAG AA): ensure high legibility on light & carbon surfaces. */
+.driver-help-icon > span { color: #FFFFFF; }
+.sidebar-site-card > div > small { color: #D1D5DB; }
+.telemetry-metrics-grid span,
+.layer-dark-metrics span,
+.profile-dark-grid span,
+.arrived-dark-metrics span,
+.donor-stat-tile.is-dark small,
+.donor-stat-tile.is-dark .stat-kicker,
+.driver-shift-strip > div > span:last-child,
+.driver-profile-stats span { color: #A1A8B4; }
+.donor-centre-option-copy em { color: #B0171D; }
+.donor-centre-option.is-selected .donor-centre-option-copy em { color: #FF4D53; }
 
 /* On phones the account name is visually hidden but stays in the button's accessible name. */
 @media (max-width: 760px) {
@@ -160,9 +214,25 @@
 /* Touch targets: 44 x 44 CSS px minimum on touch screens and phone-width layouts. */
 @media (pointer: coarse), (max-width: 760px) {
   button, [role="button"], [role="menuitemradio"], [role="menuitem"] { min-height: 44px; }
-  button:has(> svg:only-child), .icon-button, .bare-icon, .journey-zoom button, .journey-compass,
-  .notification-trigger, .account-scrim, .driver-help-icon {
+  button:has(> svg:only-child),
+  .icon-button,
+  .bare-icon,
+  .journey-zoom button,
+  .journey-compass,
+  .notification-trigger,
+  .account-scrim,
+  .driver-help-icon,
+  .dock-circle-btn,
+  .flow-floating-back,
+  .flow-floating-close,
+  .journey-back,
+  .arrived-back-btn,
+  .button-circle-outline,
+  .confirmation-close,
+  .driver-profile-toolbar-button,
+  .driver-report-export {
     min-width: 44px;
+    min-height: 44px;
   }
 }
 @media (pointer: coarse), (max-width: 1000px) {
@@ -171,11 +241,11 @@
 /* Controls that set their own fixed heights get the 44px minimum explicitly. */
 @media (pointer: coarse), (max-width: 1000px) {
   .console-nav-item { height: auto !important; min-height: 44px !important; }
-  .button, .button-primary, .button-wide, .map-change-resource { min-height: 44px !important; }
+  .button, .button-primary, .button-wide, .button-carbon, .map-change-resource, .trips-circle-filter { min-height: 44px !important; }
   .header-journey, .account-trigger { min-height: 44px !important; }
 }
 
-/* Avatars keep their size inside grid parents too (Operations "SD" stretched to 158px). */
+/* Avatars keep their size inside grid parents too. */
 [class*="avatar"] { justify-self: start; }
 .driver-avatar.avatar-small { width: 26px !important; height: 26px !important; }
 .driver-avatar.avatar-large { width: 46px !important; height: 46px !important; }
@@ -191,18 +261,6 @@
 /* Centre the scaled phone frame in its stage (flex centring is unreliable with zoom). */
 .mobile-experience-wrap .mobile-app-frame.app-surface { margin: 0 auto; }
 
-/* Donor drop: never wider than its card (was clipped at the right edge on laptop sizes). */
-.donor-fill-drop { width: min(var(--drop-w), 100%) !important; max-width: 100%; margin: 0 auto; }
-
 /* Driver trip map: a readable size so the route, car and both pins are all visible. */
 .driver-live-map-frame { height: 260px !important; min-height: 260px; position: relative; }
 .driver-live-map-canvas { height: 100% !important; }
-
-/* Journey stepper: labels wrap inside their column instead of running into each other. */
-.donor-car-track li { font-size: 11px; padding-left: 3px; padding-right: 3px; overflow-wrap: break-word; hyphens: auto; }
-
-/* Keyboard users can scroll the ride-details strip; its small labels meet contrast. */
-.donor-strip:focus-visible { outline: 2px solid #D42127; outline-offset: 2px; }
-.donor-strip-card.is-assigned > small { color: #5F6673; }
-.mobile-experience-wrap .donor-strip-card.is-assigned > small, .mobile-experience-wrap .donor-strip-card.is-assigned small { color: #4A4F59; }
-.mobile-experience-wrap .donor-strip-card small { opacity: 1; }

@@ -2,19 +2,20 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { usePhoneScale } from '../phoneScale';
 import {
   ArrowLeft,
-  ArrowLeftRight,
   ArrowRight,
   CalendarDays,
   CarFront,
   Check,
-  ChevronUp,
-  ChevronDown,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   CircleHelp,
   Clock3,
   HeartHandshake,
+  History,
   Home,
+  LocateFixed,
   MapPin,
   Navigation,
   Phone,
@@ -32,11 +33,10 @@ import {
   formatTime,
   getBookingStatus,
   getDriver,
-  getJourneyState,
   getJourneyMapState,
+  getJourneyState,
   getStatusMeta,
   isBookingActive,
-  legProgress,
   localDateString,
 } from '../domain.js';
 import {
@@ -48,14 +48,13 @@ import { ReportIssueModal } from '../components/WorkflowModals.jsx';
 import JourneyMap from '../components/JourneyMap.jsx';
 import DonationCentrePickerMap from '../components/DonationCentrePickerMap.jsx';
 import { searchPickupAddresses } from '../services/geocoding.js';
-import donorDropShell from '../assets/donor-drop-shell.png';
-import donorDropBody from '../assets/donor-drop-body.png';
 
 const DEFAULT_PICKUP = '22 West Street, Sandown, Sandton, Johannesburg';
 const DEFAULT_PHONE = '082 555 0142';
 const NAV_ITEMS = [
   { id: 'home', label: 'Home', icon: Home },
   { id: 'journey', label: 'My journey', icon: Navigation },
+  { id: 'trips', label: 'Trips', icon: History },
   { id: 'profile', label: 'Profile', icon: UserRound },
 ];
 
@@ -65,6 +64,7 @@ export function DonorApp({ state, actions }) {
   const [tab, setTab] = useState('home');
   const [screen, setScreen] = useState('main');
   const [step, setStep] = useState(0);
+  const [selectedBookingId, setSelectedBookingId] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
   const [helpModal, setHelpModal] = useState(null);
   const [helpOrigin, setHelpOrigin] = useState('main');
@@ -92,7 +92,6 @@ export function DonorApp({ state, actions }) {
     setForm((previous) => ({
       ...previous,
       donorId: profile.id || 'donor-thabo',
-      donorId: profile.id || 'donor-thabo',
       donorName: profile.name,
       donorPhone: profile.phone,
       contactNumber: profile.phone,
@@ -101,18 +100,22 @@ export function DonorApp({ state, actions }) {
     }));
   }, [profile.id, profile.name, profile.phone, profile.pickupAddress, profile.pickupCoordinates]);
 
-  const booking = useMemo(() => state.bookings
+  const donorBookings = useMemo(() => state.bookings
     .filter((item) => item.donorId === (profile.id || 'donor-thabo'))
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0] || null, [state.bookings]);
-  const activeBooking = booking && isBookingActive(booking) ? booking : null;
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)), [state.bookings, profile.id]);
+  const latestBooking = donorBookings[0] || null;
+  const booking = (selectedBookingId && donorBookings.find((item) => item.id === selectedBookingId)) || latestBooking;
+  const activeBooking = latestBooking && isBookingActive(latestBooking) ? latestBooking : null;
   const helpBooking = activeBooking || booking;
   const homeDriver = useMemo(() => {
     if (!activeBooking) return null;
     const leg = activeBooking.returnRequested && !['not_required', 'waiting_authorisation'].includes(activeBooking.returnLeg.status)
-      ? activeBooking.returnLeg : activeBooking.outbound;
+      ? activeBooking.returnLeg
+      : activeBooking.outbound;
     return getDriver(state, leg?.driverId) || null;
   }, [activeBooking, state]);
   const location = LOCATIONS.find((item) => item.id === form.locationId) || LOCATIONS[0];
+
   const startRequest = () => {
     setForm((previous) => ({ ...previous, appointmentDate: localDateString() }));
     setStep(0);
@@ -121,12 +124,6 @@ export function DonorApp({ state, actions }) {
   };
 
   const updateField = (key, value) => setForm((previous) => ({ ...previous, [key]: value }));
-  const toggleRequirement = (value) => setForm((previous) => ({
-    ...previous,
-    requirements: previous.requirements.includes(value)
-      ? previous.requirements.filter((item) => item !== value)
-      : [...previous.requirements, value],
-  }));
 
   const nextStep = () => {
     if (!form.appointmentDate || form.appointmentDate < localDateString()) {
@@ -147,6 +144,7 @@ export function DonorApp({ state, actions }) {
       return;
     }
     const created = actions.createBooking({ ...form, locationId: location.id }, 'donor');
+    setSelectedBookingId(created.id);
     setConfirmation(created);
     setScreen('confirmation');
   };
@@ -161,9 +159,15 @@ export function DonorApp({ state, actions }) {
     setHelpOrigin(screen);
     setScreen('help');
   };
+
   const navigateTab = (nextTab) => {
     setTab(nextTab);
     setScreen('main');
+  };
+
+  const openTripJourney = (tripId) => {
+    setSelectedBookingId(tripId);
+    navigateTab('journey');
   };
 
   return (
@@ -176,8 +180,9 @@ export function DonorApp({ state, actions }) {
           error={formError}
           updateField={updateField}
           onNext={nextStep}
-          onBack={() => step > 0 ? setStep((previous) => previous - 1) : closeFlow()}
+          onBack={() => (step > 0 ? setStep((previous) => previous - 1) : closeFlow())}
           onCancel={closeFlow}
+          onHelp={openHelp}
         /> : screen === 'confirmation' ? <ConfirmationScreen
           booking={confirmation}
           onViewJourney={() => { setTab('journey'); setScreen('main'); }}
@@ -206,27 +211,52 @@ export function DonorApp({ state, actions }) {
           <div className="mobile-app-scroll donor-main-scroll">
             {tab === 'home' && <DonorHome
               booking={activeBooking}
-              lastBooking={booking}
+              lastBooking={latestBooking}
+              totalTrips={donorBookings.length}
               donorName={profile.name}
+              pickupAddress={profile.pickupAddress}
               driver={homeDriver}
               onRequest={startRequest}
               onJourney={() => navigateTab('journey')}
+              onTrips={() => navigateTab('trips')}
+              onProfile={() => navigateTab('profile')}
               onHelp={openHelp}
+            />}
+            {tab === 'trips' && <DonorTrips
+              bookings={donorBookings}
+              onOpenTrip={openTripJourney}
+              onRequest={startRequest}
             />}
             {tab === 'profile' && <DonorProfile
               name={profile.name}
               phone={profile.phone}
               pickupAddress={profile.pickupAddress}
+              totalTrips={donorBookings.length}
+              activeBooking={activeBooking}
               onHelp={openHelp}
               onEdit={() => setProfileEditOpen(true)}
+              onRequest={startRequest}
             />}
           </div>
-          {/* The journey sits on the phone screen itself, not in the scrolling content, so its
-              map covers the whole screen and the handle starts at the bottom edge. */}
-          {tab === 'journey' && <DonorJourney booking={booking} state={state} onRequest={startRequest} onHelp={openHelp} onBack={() => setTab('home')} />}
-          {tab !== 'journey' && <nav className="mobile-bottom-nav" aria-label="Donor app navigation">
-            {NAV_ITEMS.map(({ id, label, icon: Icon }) => <button type="button" key={id} className={tab === id ? 'active' : ''} aria-current={tab === id ? 'page' : undefined} onClick={() => navigateTab(id)}>
-              <Icon size={19} strokeWidth={tab === id ? 2.2 : 1.8} /><span>{label}</span>
+          {tab === 'journey' && <DonorJourney
+            booking={booking}
+            state={state}
+            onRequest={startRequest}
+            onHelp={openHelp}
+            onBack={() => navigateTab('home')}
+            onViewTrips={() => navigateTab('trips')}
+          />}
+          {tab !== 'journey' && <nav className="mobile-bottom-nav donor-circular-dock" aria-label="Donor app navigation">
+            {NAV_ITEMS.map(({ id, label, icon: Icon }) => <button
+              type="button"
+              key={id}
+              className={`dock-circle-btn${tab === id ? ' active' : ''}`}
+              aria-label={label}
+              aria-current={tab === id ? 'page' : undefined}
+              title={label}
+              onClick={() => navigateTab(id)}
+            >
+              <Icon size={20} strokeWidth={tab === id ? 2.3 : 1.9} />
             </button>)}
           </nav>}
         </>}
@@ -273,7 +303,27 @@ export function DonorApp({ state, actions }) {
   );
 }
 
-function DonorHome({ booking, lastBooking, donorName, onRequest, onJourney, onHelp, driver }) {
+function timeGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good\nmorning,';
+  if (hour < 18) return 'Good\nafternoon,';
+  return 'Good\nevening,';
+}
+
+function DonorHome({
+  booking,
+  lastBooking,
+  totalTrips,
+  donorName,
+  pickupAddress,
+  onRequest,
+  onJourney,
+  onTrips,
+  onProfile,
+  onHelp,
+  driver,
+}) {
+  const firstName = donorName.split(' ')[0] || 'Donor';
   const appointment = booking?.appointment || lastBooking?.appointment || {
     locationName: 'SANBS Sandton Donor Centre',
     locationAddress: 'Rivonia Road, Sandton, Johannesburg',
@@ -283,202 +333,244 @@ function DonorHome({ booking, lastBooking, donorName, onRequest, onJourney, onHe
   };
   const statusMeta = booking ? getStatusMeta(booking) : null;
   const returnActive = Boolean(booking?.returnRequested && !['not_required', 'waiting_authorisation'].includes(booking.returnLeg.status));
-  const routeFrom = returnActive ? appointment.locationName : booking?.pickupAddress || DEFAULT_PICKUP;
-  const routeTo = returnActive ? booking.pickupAddress : appointment.locationName;
   const activeMapState = booking ? getJourneyMapState(booking, returnActive ? 'return' : 'outbound') : null;
-  /* The drop follows the whole journey on the shared timeline: it fills while the driver
-     approaches the donor (first half) and while the trip runs to the centre (second half). */
   const gaugeFill = activeMapState ? Math.max(0, Math.min(1, activeMapState.fillProgress)) : 0;
-  /* Keep the drop live: re-render while a journey is moving so the fill follows the driver. */
   const [, setDropClock] = useState(0);
   useEffect(() => {
     if (!activeMapState?.moving) return undefined;
     const timer = window.setInterval(() => setDropClock(Date.now()), 500);
     return () => window.clearInterval(timer);
   }, [activeMapState?.moving]);
-  /* Stage index of the active leg: 4 = donor picked up, 5 = arrived at the destination. */
-  const stage = booking ? stepIndexFor(getBookingStatus(booking), Boolean(returnActive)) : -1;
 
-  /* ---- no ride yet: book-first state, the reference's pre-booking screen ---- */
+  /* ---- pre-booking state: matches Home reference 00.03.36 ---- */
   if (!booking) {
     return <div className="donor-home-page">
-      <div className="donor-greeting-row">
-        <div>
-          <span className="eyebrow">{formatDate(localDateString(), { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase()} · JOHANNESBURG</span>
-          <h1>Where do you<br />want to go?</h1>
+      <header className="donor-greeting-row">
+        <div className="donor-greeting-copy">
+          <h1>{timeGreeting()}<br /><span>{firstName}</span></h1>
         </div>
-        <span className="donor-profile-initials" aria-label={donorName}>{initialsOf(donorName)}</span>
-      </div>
-
-      <section className="donor-ride-hero donor-map-hero" aria-label="Your donation trip">
-        <div className="donor-hero-topline"><span>YOUR DONATION TRIP</span><span>{appointment.locationKind || 'DONATION CENTRE'}</span></div>
-        <div className="donor-empty-drop">
-          <DonorCharacterDrop empty />
-          <span className="donor-empty-readout" aria-hidden="true"><b>—</b><em>No ride booked</em></span>
-        </div>
-        <div className="donor-route-fields">
-          <div className="donor-route-field">
-            <span className="donor-field-pin donor-field-pin-start" aria-hidden="true" />
-            <span><small>PICKUP · YOUR ADDRESS</small><b>{booking?.pickupAddress || DEFAULT_PICKUP}</b></span>
-          </div>
-          <span className="donor-field-swap" aria-hidden="true"><ArrowLeftRight size={13} /></span>
-          <div className="donor-route-field">
-            <span className="donor-field-pin donor-field-pin-end" aria-hidden="true" />
-            <span><small>DESTINATION · APPOINTMENT</small><b>{appointment.locationName}</b></span>
-          </div>
-        </div>
-        <div className="donor-hero-appointment">
-          <strong>{formatTime(appointment.time)}</strong>
-          <span><b>{formatDate(appointment.date, { weekday: 'long', day: 'numeric', month: 'long' })}</b><small>Return trip included · free for donors</small></span>
-        </div>
-        <button className="button donor-hero-button" type="button" onClick={onRequest}>
-          <span className="donor-cta-disc"><ArrowRight size={14} /></span>
-          Request this ride
+        <button className="donor-profile-initials" type="button" onClick={onProfile} aria-label={`${donorName} profile`}>
+          {initialsOf(donorName)}
         </button>
+      </header>
+
+      <section className="donor-stealth-map-card" aria-label="Upcoming pickup route preview">
+        <RouteMap
+          from={pickupAddress || DEFAULT_PICKUP}
+          to={appointment.locationName}
+          progress={0.22}
+          dark
+          hideChrome
+          actionLabel="Confirm"
+          onAction={onRequest}
+        />
       </section>
+
+      <button className="donor-cta-banner" type="button" onClick={onRequest}>
+        <span className="donor-cta-copy">
+          <strong>Book a ride</strong>
+          <small>{shortPlace(appointment.locationName)} · {formatTime(appointment.time)}</small>
+        </span>
+        <span className="donor-cta-disc" aria-hidden="true"><ArrowRight size={18} /></span>
+      </button>
+
+      <div className="donor-bento-stats" aria-label="Donor summary">
+        <button type="button" className="donor-stat-tile is-light" onClick={onTrips}>
+          <span className="stat-kicker">DONOR TRIPS</span>
+          <strong className="stat-figure">{totalTrips}</strong>
+          <small>View ride history</small>
+        </button>
+        <button type="button" className="donor-stat-tile is-dark" onClick={onRequest}>
+          <span className="stat-kicker">NEXT SLOT</span>
+          <strong className="stat-figure is-accent">{formatTime(appointment.time)}</strong>
+          <small>Free donor return</small>
+        </button>
+      </div>
 
       <div className="donor-home-shortcuts" aria-label="Quick actions">
-        <button type="button" onClick={onJourney}><span className="shortcut-icon"><Navigation size={17} /></span><span><strong>Ride options</strong><small>Both ways, driver waits</small></span><ChevronRight size={16} /></button>
-        <button type="button" onClick={onHelp}><span className="shortcut-icon"><CircleHelp size={17} /></span><span><strong>Get help</strong><small>Support and pickup changes</small></span><ChevronRight size={16} /></button>
+        <button type="button" onClick={onTrips}>
+          <span className="shortcut-icon"><History size={17} /></span>
+          <span><strong>My Trips</strong><small>{totalTrips ? `${totalTrips} logged in account` : 'Receipt log & past journeys'}</small></span>
+          <ChevronRight size={16} />
+        </button>
+        <button type="button" onClick={onHelp}>
+          <span className="shortcut-icon"><CircleHelp size={17} /></span>
+          <span><strong>Transport support</strong><small>Pickup updates & dispatch help</small></span>
+          <ChevronRight size={16} />
+        </button>
       </div>
-
-      <section className="donor-home-activity">
-        <div className="donor-activity-heading"><span className="section-kicker">YOUR IMPACT</span><span>{lastBooking ? '1 PREVIOUS RIDE' : 'FIRST RIDE'}</span></div>
-        <div className="donor-impact-card">
-          <span className="donor-impact-heart" aria-hidden="true"><HeartHandshake size={17} /></span>
-          <span><strong>Every ride keeps a donor appointment</strong><small>Missed transport is the main reason donations are cancelled.</small></span>
-        </div>
-        <p className="donor-activity-empty">No ride requested yet. Your appointment above is already set as the destination.</p>
-      </section>
     </div>;
   }
 
-  /* ---- active ride: the reference's tracking screen ---- */
+  /* ---- active ride state: carbon telemetry hero card ---- */
   const liveReadout = gaugeReadout(booking, returnActive);
-  const readoutIsWord = !/^\d+$/.test(String(liveReadout.big));
-  const legSteps = returnActive ? RETURN_STEPS : OUTBOUND_STEPS;
+  const progressPct = Math.round(gaugeFill * 100);
   return <div className="donor-home-page">
-    <div className="donor-greeting-row">
-      <div>
-        <span className="eyebrow">{booking.reference} · {returnActive ? 'RETURN JOURNEY' : 'OUTBOUND'}</span>
+    <header className="donor-greeting-row">
+      <div className="donor-greeting-copy">
+        <span className="eyebrow">{booking.reference} · {returnActive ? 'RETURN' : 'OUTBOUND'}</span>
         <h1>{statusMeta.label}</h1>
       </div>
-      <span className="donor-profile-initials" aria-label={donorName}>{initialsOf(donorName)}</span>
-    </div>
+      <button className="donor-profile-initials" type="button" onClick={onProfile} aria-label={`${donorName} profile`}>
+        {initialsOf(donorName)}
+      </button>
+    </header>
 
-    <section className={`donor-drop-hero${returnActive ? ' is-return' : ''}`} aria-label="Your live ride">
-      <div className="donor-fill">
-        <div className="donor-fill-drop">
-          <DonorCharacterDrop fill={gaugeFill} />
+    <section className="donor-telemetry-hero" aria-label="Live ride telemetry">
+      <div className="telemetry-hero-head">
+        <StatusChip booking={booking} compact />
+        <span className="telemetry-leg-tag">{returnActive ? 'Homebound' : 'To SANBS'}</span>
+      </div>
+
+      <div className="telemetry-route-stack">
+        <div className="telemetry-stop">
+          <span className="telemetry-dot is-origin" aria-hidden="true" />
+          <div><small>PICKUP</small><strong>{returnActive ? appointment.locationName : (booking.pickupAddress || DEFAULT_PICKUP)}</strong></div>
         </div>
-
-        <div className="donor-fill-read">
-          <div className="donor-drop-caption">
-            <b className="donor-drop-pct">{Math.round(gaugeFill * 100)}%</b>
-            <span className="donor-drop-label">{returnActive ? 'to your home' : activeMapState?.phase === 'to_pickup' ? 'driver is on the way' : 'to the donor centre'}</span>
-            <span className="donor-progress-chip">{gaugeFill >= 1 ? 'Completed' : 'In progress'}</span>
-          </div>
-          <ol className="donor-car-track" aria-label="Journey progress">
-            {legSteps.map((label, index) => <li
-              key={label}
-              className={index < stage ? 'done' : index === stage ? 'now' : ''}
-              aria-current={index === stage ? 'step' : undefined}
-            ><i /><span>{label}</span></li>)}
-            <span
-              className="donor-car"
-              style={{ left: `${((Math.min(Math.max(stage, 0), legSteps.length - 1) + 0.5) / legSteps.length) * 100}%` }}
-              aria-hidden="true"
-            ><CarFront size={18} /></span>
-          </ol>
+        <div className="telemetry-stop">
+          <span className="telemetry-dot is-dest" aria-hidden="true" />
+          <div><small>DESTINATION</small><strong>{returnActive ? booking.pickupAddress : appointment.locationName}</strong></div>
         </div>
       </div>
 
-      <div className="donor-strip" role="region" tabIndex={0} aria-label="Ride details">
-        {driver && <div className="donor-strip-card is-assigned">
-          <span className="k">Driver</span>
-          <b>{driver.name}</b>
-          <small>{driver.vehicle} · {driver.registration}</small>
-        </div>}
-        <div className={`donor-strip-card${stage >= 4 ? ' is-picked' : ''}`}>
-          <span className="k">Pickup</span>
-          <b>{booking.pickupAddress || DEFAULT_PICKUP}</b>
+      <div className="telemetry-metrics-grid">
+        <div>
+          <span>ETA</span>
+          <strong className="is-accent">{liveReadout.big}{/^\d+$/.test(String(liveReadout.big)) ? 'm' : ''}</strong>
         </div>
-        <div className={`donor-strip-card${stage >= 5 ? ' is-arrived' : ''}`}>
-          <span className="k">Destination</span>
-          <b>{appointment.locationName}</b>
-          <small>{formatTime(appointment.time)} · {formatDate(appointment.date, { weekday: 'short', day: 'numeric', month: 'short' })}</small>
+        <div>
+          <span>PROGRESS</span>
+          <strong>{progressPct}%</strong>
+        </div>
+        <div>
+          <span>APPOINTMENT</span>
+          <strong>{formatTime(appointment.time)}</strong>
         </div>
       </div>
 
-      <button className="button donor-hero-button" type="button" onClick={onJourney}>
-        <span className="donor-cta-disc"><ArrowRight size={14} /></span>
-        Open live journey
+      <div className="telemetry-bar" role="progressbar" aria-valuenow={progressPct} aria-valuemin={0} aria-valuemax={100}>
+        <span style={{ width: `${Math.max(progressPct, 6)}%` }} />
+      </div>
+
+      {driver && <div className="telemetry-driver-pill">
+        <span className="telemetry-driver-avatar">{driver.initials}</span>
+        <div><strong>{driver.name}</strong><small>{driver.vehicle} · {driver.registration}</small></div>
+        <span className="telemetry-live-badge">Live</span>
+      </div>}
+
+      <button className="donor-cta-banner is-compact" type="button" onClick={onJourney}>
+        <span className="donor-cta-copy">
+          <strong>Track live ride</strong>
+          <small>{liveReadout.caption}</small>
+        </span>
+        <span className="donor-cta-disc" aria-hidden="true"><ArrowRight size={18} /></span>
       </button>
     </section>
 
-    <div className="donor-home-shortcuts" aria-label="Quick actions">
-      <button type="button" onClick={onJourney}><span className="shortcut-icon"><Navigation size={17} /></span><span><strong>My journey</strong><small>{booking.reference} · {booking.returnRequested ? 'Return requested' : 'One-way ride'}</small></span><ChevronRight size={16} /></button>
-      <button type="button" onClick={onHelp}><span className="shortcut-icon"><CircleHelp size={17} /></span><span><strong>Get help</strong><small>Support and pickup changes</small></span><ChevronRight size={16} /></button>
+    <div className="donor-bento-stats" aria-label="Journey metrics">
+      <button type="button" className="donor-stat-tile is-light" onClick={onTrips}>
+        <span className="stat-kicker">TRIPS</span>
+        <strong className="stat-figure">{totalTrips}</strong>
+        <small>View receipts</small>
+      </button>
+      <button type="button" className="donor-stat-tile is-dark" onClick={onHelp}>
+        <span className="stat-kicker">SUPPORT</span>
+        <strong className="stat-figure is-accent">24/7</strong>
+        <small>SANBS Ops link</small>
+      </button>
     </div>
-
-    <section className="donor-home-activity">
-      <div className="donor-activity-heading"><span className="section-kicker">JOURNEY ACTIVITY</span><span>1 ACTIVE</span></div>
-      <button className="donor-activity-row" type="button" onClick={onJourney}>
-        <span className="donor-activity-mark"><CarFront size={18} /></span>
-        <span><strong>{returnActive ? 'Return journey' : `Ride to ${appointment.locationName}`}</strong><small>{booking.reference} · {booking.returnRequested ? 'Return requested' : 'One-way ride'}</small></span>
-        <StatusChip booking={booking} compact /><ChevronRight size={15} />
-      </button>
-    </section>
   </div>;
 }
 
-/* The stepper reads the real booking status so the dots never disagree with
-   the status chip or the shared journey timeline. Two legs, two labellings. */
-const DONATION_FACTS = [
-  'A single blood donation can help save up to three lives.',
-  'Your body replaces donated plasma within about 24 to 48 hours.',
-  'Red blood cells are used to help patients after surgery or serious injury.',
-  'Every donation is carefully tested before it can help a patient.',
-  'Blood platelets can help people being treated for cancer.',
-];
+/* ==========================================================================
+   My Trips Screen — matches 00.26.35 receipt list + 4 circular status filters
+   ========================================================================== */
+function DonorTrips({ bookings, onOpenTrip, onRequest }) {
+  const [filter, setFilter] = useState('all');
+  const filters = [
+    { id: 'all', label: 'All', icon: History },
+    { id: 'active', label: 'Active', icon: Navigation },
+    { id: 'completed', label: 'Done', icon: Check },
+    { id: 'cancelled', label: 'Cancelled', icon: X },
+  ];
 
-const OUTBOUND_STEPS = ['Assigned', 'On the way', 'On board', 'At centre'];
-const RETURN_STEPS = ['Authorised', 'Assigned', 'On the way', 'Home'];
+  const filtered = useMemo(() => bookings.filter((item) => {
+    const status = getBookingStatus(item);
+    if (filter === 'active') return isBookingActive(item);
+    if (filter === 'completed') return status === 'completed';
+    if (filter === 'cancelled') return status === 'cancelled';
+    return true;
+  }), [bookings, filter]);
 
-function stepIndexFor(status, returnLeg) {
-  if (returnLeg) {
-    if (status === 'return_awaiting_dispatch') return 0;
-    if (status === 'return_driver_assigned') return 1;
-    if (status === 'return_driver_on_the_way' || status === 'return_driver_arrived') return 2;
-    if (status === 'donor_on_the_way_home') return 3;
-    if (status === 'completed') return 4;
-    return 0;
-  }
-  if (status === 'awaiting_assignment') return 0;
-  if (status === 'driver_assigned') return 0;
-  if (status === 'driver_on_the_way') return 1;
-  if (status === 'driver_arrived') return 1;
-  if (status === 'donor_picked_up') return 2;
-  if (status === 'arrived_at_site') return 3;
-  return 0;
+  return <div className="donor-trips-page">
+    <header className="donor-trips-header">
+      <div>
+        <span className="eyebrow">HISTORY</span>
+        <h1>My Trips</h1>
+      </div>
+      <span className="trips-count-pill">{bookings.length} {bookings.length === 1 ? 'ride' : 'rides'}</span>
+    </header>
+
+    <div className="trips-filter-circles" role="tablist" aria-label="Filter trips">
+      {filters.map(({ id, label, icon: Icon }) => <button
+        key={id}
+        type="button"
+        role="tab"
+        aria-selected={filter === id}
+        className={`trips-circle-filter${filter === id ? ' is-active' : ''}`}
+        onClick={() => setFilter(id)}
+      >
+        <span className="trips-circle-disc"><Icon size={17} strokeWidth={2.2} /></span>
+        <small>{label}</small>
+      </button>)}
+    </div>
+
+    {filtered.length ? <div className="trips-receipt-list">
+      {filtered.map((item) => {
+        const returnActive = Boolean(item.returnRequested && !['not_required', 'waiting_authorisation'].includes(item.returnLeg?.status));
+        const fromLabel = shortPlace(item.pickupAddress);
+        const toLabel = shortPlace(item.appointment?.locationName);
+        return <button key={item.id} type="button" className="trip-receipt-card" onClick={() => onOpenTrip(item.id)}>
+          <div className="trip-receipt-top">
+            <span>{item.returnRequested ? 'ROUND TRIP' : 'ONE-WAY'} · {item.reference}</span>
+            <StatusChip booking={item} compact />
+          </div>
+          <strong className="trip-receipt-route">{fromLabel} → {toLabel}</strong>
+          <div className="trip-receipt-bottom">
+            <span>{formatDate(item.appointment?.date, { weekday: 'short', day: 'numeric', month: 'short' })} · {formatTime(item.appointment?.time)}</span>
+            <b>{returnActive ? 'Return leg' : 'Free · SANBS'}</b>
+          </div>
+        </button>;
+      })}
+    </div> : <div className="trips-empty-card">
+      <span className="trips-empty-icon"><CarFront size={20} /></span>
+      <strong>No {filter === 'all' ? '' : `${filter} `}trips found</strong>
+      <p>Your SANBS donor transport receipts and active rides appear here.</p>
+      <button type="button" className="button button-primary" onClick={onRequest}>Book a ride <ArrowRight size={15} /></button>
+    </div>}
+  </div>;
+}
+
+function shortPlace(value = '') {
+  const clean = String(value).trim();
+  const firstPart = clean.split(',')[0].trim();
+  return firstPart.replace(/^SANBS\s+/i, '').replace(/\s+Donor Centre$/i, '') || clean;
 }
 
 function initialsOf(name = '') {
   return name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
 }
 
-/* The gauge readout: a big figure and its caption, always in agreement.
-   No duplication is possible because they are two different strings. */
 const READOUT_BY_LEG = {
-  driver_assigned:      { big: '6',  caption: 'min away' },
-  driver_on_the_way:    { big: '8',  caption: 'min away' },
-  driver_arrived:       { big: 'Now', caption: 'at your door' },
-  donor_picked_up:      { big: 'En route', caption: 'to the centre' },
-  arrived_at_site:      { big: 'Here', caption: 'at the centre' },
+  driver_assigned: { big: '6', caption: 'min away' },
+  driver_on_the_way: { big: '8', caption: 'min away' },
+  driver_arrived: { big: 'Now', caption: 'at your door' },
+  donor_picked_up: { big: 'En route', caption: 'to the centre' },
+  arrived_at_site: { big: 'Here', caption: 'at the centre' },
   donor_on_the_way_home: { big: 'En route', caption: 'homeward' },
-  completed:            { big: 'Done', caption: 'journey complete' },
+  completed: { big: 'Done', caption: 'journey complete' },
   waiting_authorisation: { big: 'Next', caption: 'return authorised' },
-  not_required:         { big: '—', caption: 'one-way ride' },
+  not_required: { big: '—', caption: 'one-way ride' },
 };
 
 function gaugeReadout(booking, returnActive) {
@@ -488,71 +580,22 @@ function gaugeReadout(booking, returnActive) {
   return READOUT_BY_LEG[leg?.status] || { big: '—', caption: 'in progress' };
 }
 
-/* The drop is a drawn character. Its body is a separate mask (donor-drop-body.png)
-   so the liquid rises inside the body while the face, outline and highlight stay
-   on top (donor-drop-shell.png). BODY_TOP and BODY_BOTTOM are fractions of the
-   cropped image box (its height) where the body starts and ends. */
-const BODY_TOP = 0.0417, BODY_BOTTOM = 0.869;
-/* One crest every 50 units; the svg holds two copies of the wave pattern, so moving
-   the wave by half its width (-50%) loops seamlessly. */
-const WAVE_TOP = ['M0 20 Q12.5 2 25 20', ...Array.from({ length: 15 }, (_, i) => `T${50 + i * 25} 20`)].join(' ');
-const WAVE_D = `${WAVE_TOP} V40 H0 Z`;
-
-function DonorCharacterDrop({ fill = 0, empty = false }) {
-  const level = empty ? 0 : Math.max(0, Math.min(1, fill));
-  const mask = `url(${donorDropBody})`;
-  return <div className="donor-character" role="img" aria-label={empty ? 'No ride booked' : `Journey ${Math.round(level * 100)} percent complete`}>
-    <div className="donor-character-body" style={{ WebkitMaskImage: mask, maskImage: mask }}>
-      {level > 0 && <div
-        className="donor-character-liquid"
-        style={{ bottom: `${(1 - BODY_BOTTOM) * 100}%`, height: `${level * (BODY_BOTTOM - BODY_TOP) * 100}%` }}
-      ><span className="donor-wave is-back" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path fill="#F0676C" d={WAVE_D} /></svg></span><span className="donor-wave" aria-hidden="true"><svg viewBox="0 0 400 40" preserveAspectRatio="none"><path fill="#E23A3F" d={WAVE_D} /><path fill="none" stroke="#FFFFFF" strokeOpacity=".6" strokeWidth="2.5" d={WAVE_TOP} /></svg></span><i className="donor-bubble b1" /><i className="donor-bubble b2" /><i className="donor-bubble b3" /></div>}
-    </div>
-    <img className="donor-character-shell" src={donorDropShell} alt="" aria-hidden="true" />
-  </div>;
-}
-
-function DonorRouteArtwork({ from, to, progress, reverse = false }) {
-  const stage = Math.max(0, Math.min(progress, 1));
-  const markerX = 36 + stage * 276;
-  const markerY = reverse ? 22 + stage * 82 + Math.sin(stage * Math.PI) * 9 : 106 - stage * 82 - Math.sin(stage * Math.PI) * 9;
-  return <div className={`donor-route-art${reverse ? ' donor-route-art-reverse' : ''}`} role="img" aria-label={`Route from ${from} to ${to}`}>
-    <div className="donor-route-art-meta"><span>ROUTE PREVIEW</span><span>JOHANNESBURG</span></div>
-    <svg viewBox="0 0 360 128" aria-hidden="true" preserveAspectRatio="xMidYMid slice">
-      <g className="donor-map-buildings">
-        <path d="M8 11h43v24H8zM65 8h25v35H65zM102 18h48v22h-48zM287 10h42v30h-42zM322 56h31v19h-31zM13 89h42v28H13zM76 94h33v22H76zM294 95h49v21h-49z" />
-      </g>
-      <path d="M18 107 C62 91 68 48 115 56 S171 102 213 78 260 37 342 21" fill="none" stroke="#7f1a24" strokeWidth="15" strokeLinecap="round" />
-      <path d="M18 107 C62 91 68 48 115 56 S171 102 213 78 260 37 342 21" fill="none" stroke="#f7dfe1" strokeWidth="8" strokeLinecap="round" />
-      <path d="M18 107 C62 91 68 48 115 56 S171 102 213 78 260 37 342 21" fill="none" stroke="#b51f2d" strokeWidth="2" strokeLinecap="round" strokeDasharray="3 8" />
-      <circle cx="18" cy="107" r="7" fill="#fff" stroke="#b51f2d" strokeWidth="3" />
-      <circle cx="342" cy="21" r="8" fill="#fff" stroke="#b51f2d" strokeWidth="3" />
-      <g transform={`translate(${markerX - 12} ${markerY - 8})`}>
-        <path d="M1 8h4l3-5h8l4 5h3v7H1z" fill="#fff" stroke="#202224" strokeWidth="1.4" strokeLinejoin="round" />
-        <path d="M9 4h6v4H7z" fill="#b51f2d" />
-        <circle cx="6" cy="15" r="2.5" fill="#202224" stroke="#fff" strokeWidth="1" />
-        <circle cx="19" cy="15" r="2.5" fill="#202224" stroke="#fff" strokeWidth="1" />
-      </g>
-    </svg>
-  </div>;
-}
-
 function donorStatusMessage(booking, returnActive = false) {
   const status = getBookingStatus(booking);
   const activeLeg = returnActive ? booking.returnLeg : booking.outbound;
   if (status === 'awaiting_assignment') return 'We’ve received your request. We’ll let you know when a driver is assigned.';
   if (status === 'driver_assigned') {
-    if (activeLeg?.accepted) return 'Your driver accepted the ride and is preparing to head to your pickup.';
+    if (activeLeg?.accepted) return 'Your driver accepted the ride and is heading to your pickup.';
     if (activeLeg?.acknowledged) return 'Your driver acknowledged the assignment and is preparing for pickup.';
     return 'A driver is assigned. We’ll update you when they confirm.';
   }
   if (status === 'driver_on_the_way') return 'Your driver is heading to your pickup address.';
-  if (status === 'driver_arrived') return 'Your driver is at the pickup location.';
+  if (status === 'driver_arrived') return 'Your driver is waiting at your pickup location.';
   if (status === 'donor_picked_up') return 'You’re on your way to the donation centre.';
   if (status === 'awaiting_return_authorisation') return 'You’ve arrived at SANBS. Your return will be arranged once the team confirms you’re ready.';
   if (status === 'return_awaiting_dispatch') return 'SANBS has confirmed you’re ready. We’re arranging your return driver.';
   if (status === 'return_driver_assigned') {
-    if (activeLeg?.accepted) return 'Your return driver accepted the ride and is preparing to head to the donation centre.';
+    if (activeLeg?.accepted) return 'Your return driver accepted the ride and is preparing to head to the centre.';
     if (activeLeg?.acknowledged) return 'Your return driver acknowledged the assignment.';
     return 'A return driver is assigned. We’ll update you when they confirm.';
   }
@@ -562,8 +605,6 @@ function donorStatusMessage(booking, returnActive = false) {
   return 'Your booking is being coordinated with SANBS transport.';
 }
 
-/* Trip stops, drawn like the mission list: round icon, title, count and an arrow.
-   Done stops are ink, the current stop is the red accent, upcoming stops are outlined. */
 function JourneyStops({ booking, leg = 'outbound' }) {
   const journey = getJourneyState(booking, leg);
   return <ol className="journey-stops" aria-label="Trip stops">
@@ -572,27 +613,63 @@ function JourneyStops({ booking, leg = 'outbound' }) {
       const current = !journey.done && i === journey.index;
       const state = done ? 'is-done' : current ? 'is-current' : 'is-next';
       return <li key={stage.key} className={`journey-stop ${state}`} aria-current={current ? 'step' : undefined}>
-        <span className="journey-stop-icon">{done ? <Check size={15} strokeWidth={3} /> : <MapPin size={15} />}</span>
+        <span className="journey-stop-icon">{done ? <Check size={14} strokeWidth={3} /> : <MapPin size={14} />}</span>
         <span className="journey-stop-copy"><strong>{stage.title}</strong><small>{done ? 'Done' : current ? 'Happening now' : 'Next'}</small></span>
         <span className="journey-stop-count">{i + 1}/{journey.stages.length}</span>
-        <span className="journey-stop-go" aria-hidden="true"><ChevronRight size={16} /></span>
+        <span className="journey-stop-go" aria-hidden="true"><ChevronRight size={15} /></span>
       </li>;
     })}
   </ol>;
 }
 
-function DonorJourney({ booking, state, onRequest, onHelp, onBack }) {
+/* ==========================================================================
+   My Journey Screen — Two-layer drawer + Stealth Map + Completed Arrival card
+   ========================================================================== */
+function DonorJourney({ booking, state, onRequest, onHelp, onBack, onViewTrips }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [touchStartY, setTouchStartY] = useState(null);
   const [focusToken, setFocusToken] = useState(0);
+
   if (!booking) return <div className="donor-empty-journey">
-    <span className="donor-journey-character"><DonorCharacterDrop empty /></span>
+    <span className="donor-empty-glyph" aria-hidden="true"><Navigation size={24} /></span>
     <span className="section-kicker">MY JOURNEY</span>
     <h1>No ride booked yet</h1>
-    <p>Your transport request, assigned driver and trip progress will appear here.</p>
-    <button className="button button-primary button-wide" type="button" onClick={onRequest}>Request transport <ArrowRight size={15} /></button>
+    <p>Your live route, driver telemetry, and trip progress appear here once a ride is requested.</p>
+    <button className="button button-primary button-wide" type="button" onClick={onRequest}>Book a ride <ArrowRight size={15} /></button>
     <button className="text-button help-text-button" type="button" onClick={onHelp}>Need help? Contact support</button>
   </div>;
+
+  const status = getBookingStatus(booking);
+
+  /* Completed arrival view — matches 00.26.20 ("You arrived!") */
+  if (status === 'completed') {
+    return <div className="donor-arrived-screen">
+      <header className="arrived-dark-header">
+        <button className="arrived-back-btn" type="button" onClick={onBack} aria-label="Back to home"><ArrowLeft size={18} /></button>
+        <div>
+          <span className="eyebrow">TRIP COMPLETE · {booking.reference}</span>
+          <h1>You arrived!</h1>
+          <p>Thank you for donating with SANBS.</p>
+        </div>
+      </header>
+      <div className="arrived-body">
+        <div className="arrived-dark-metrics">
+          <div><span>STATUS</span><strong className="is-accent">Done</strong></div>
+          <div><span>RETURN</span><strong>{booking.returnRequested ? 'Included' : 'One-way'}</strong></div>
+          <div><span>FARE</span><strong>Free</strong></div>
+        </div>
+        <div className="arrived-route-card">
+          <div className="arrived-route-point"><span className="dot is-origin" /><div><small>PICKUP</small><strong>{booking.pickupAddress}</strong></div></div>
+          <div className="arrived-route-point"><span className="dot is-dest" /><div><small>DONATION SITE</small><strong>{booking.appointment.locationName}</strong></div></div>
+        </div>
+        <div className="arrived-pill-actions">
+          <button type="button" className="button button-quiet" onClick={onViewTrips}>View receipt</button>
+          <button type="button" className="button button-quiet" onClick={onHelp}>Trip support</button>
+        </div>
+        <button type="button" className="button button-primary button-wide" onClick={onBack}>Done <Check size={16} /></button>
+      </div>
+    </div>;
+  }
 
   const returnActive = booking.returnRequested && !['not_required', 'waiting_authorisation'].includes(booking.returnLeg.status);
   const driverId = returnActive ? booking.returnLeg.driverId : booking.outbound.driverId;
@@ -603,8 +680,8 @@ function DonorJourney({ booking, state, onRequest, onHelp, onBack }) {
   const percent = journey.done ? 100 : Math.round(mapJourney.phase === 'to_pickup'
     ? mapJourney.progress * 35
     : 35 + mapJourney.progress * 65);
+  const liveReadout = gaugeReadout(booking, returnActive);
 
-  /* Swipe up anywhere on the map opens the sheet; swipe down on the handle closes it. */
   const onPageTouchStart = (event) => setTouchStartY(event.touches[0].clientY);
   const onPageTouchEnd = (event) => {
     if (touchStartY === null) return;
@@ -626,13 +703,14 @@ function DonorJourney({ booking, state, onRequest, onHelp, onBack }) {
   const routeTo = mapJourney.phase === 'to_pickup'
     ? (returnActive ? booking.appointment.locationAddress : booking.pickupAddress)
     : (returnActive ? booking.pickupAddress : booking.appointment.locationAddress);
+
   return <div className={`donor-journey-page${sheetOpen ? ' is-sheet-open' : ''}`} onTouchStart={onPageTouchStart} onTouchEnd={onPageTouchEnd}>
-    <button className="journey-back" type="button" onClick={onBack} aria-label="Back to home"><ArrowLeft size={20} /></button>
+    <button className="journey-back" type="button" onClick={onBack} aria-label="Back to home"><ArrowLeft size={19} /></button>
     <div className="journey-map-wrap">
       <JourneyMap booking={booking} leg={legName} focusToken={focusToken} from={routeFrom} to={routeTo} controls />
-      <span className="journey-route-chip"><MapPin size={12} /> {routeFrom} → {routeTo}</span>
+      <span className="journey-route-chip"><MapPin size={12} /> {shortPlace(routeFrom)} → {shortPlace(routeTo)}</span>
     </div>
-    <button className="journey-locate" type="button" onClick={() => setFocusToken((count) => count + 1)} aria-label="Show my car's live location"><Navigation size={22} /><span>Live</span></button>
+    <button className="journey-locate" type="button" onClick={() => setFocusToken((count) => count + 1)} aria-label="Show my car's live location"><LocateFixed size={20} /><span>Live</span></button>
     <div className={`journey-sheet${sheetOpen ? ' is-open' : ''}`} onTouchEnd={onHandleTouchEnd}>
       <button
         className="journey-sheet-tab"
@@ -641,32 +719,53 @@ function DonorJourney({ booking, state, onRequest, onHelp, onBack }) {
         aria-label={sheetOpen ? 'Minimize trip details' : 'Open trip details'}
         onClick={() => setSheetOpen((open) => !open)}
       >
-        <span className="journey-sheet-tab-label">Trip details</span>
+        <span className="sheet-grab-bar" aria-hidden="true" />
+        <span className="journey-sheet-tab-label">{sheetOpen ? 'Hide details' : 'Trip details'}</span>
         {sheetOpen ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
       </button>
+
+      {/* Two-layer summary card always visible in the drawer */}
       <div className="journey-sheet-body">
-        <button className="journey-sheet-close" type="button" onClick={() => setSheetOpen(false)} aria-label="Minimize Journey Info">Minimize <ChevronDown size={14} /></button>
-        <div className="journey-page-heading"><span className="section-kicker">MY JOURNEY</span><h1>Ride details</h1><p>Ref {booking.reference}</p></div>
-        <div className="journey-status-card">
-          <div>
-            <StatusChip booking={booking} />
-            <h2>{getStatusMeta(booking).label}</h2>
-            <p>{donorStatusMessage(booking, returnActive)}</p>
-            <div className="journey-progress-line"><span>Progress</span><b>{percent}%</b></div>
-            {percent > 0 && percent < 100 && <p className="donation-fact" key={percent}><strong>Did you know?</strong> {DONATION_FACTS[percent % DONATION_FACTS.length]}</p>}
-            <div className="journey-segments" style={{ gridTemplateColumns: `repeat(${journey.stages.length}, 1fr)` }} aria-hidden="true">
-              {journey.stages.map((stage, i) => <i
-                key={stage.key}
-                className={journey.done || i < journey.index ? 'is-done' : i === journey.index ? 'is-now' : ''}
-              />)}
+        <div className="journey-two-layer-card">
+          <div className="layer-soft-top">
+            <div className="layer-status-row">
+              <div>
+                <span className="section-kicker">{booking.reference} · {returnActive ? 'RETURN' : 'OUTBOUND'}</span>
+                <h2>{getStatusMeta(booking).label}</h2>
+              </div>
+              <StatusChip booking={booking} compact />
+            </div>
+            <p className="layer-subtitle">{donorStatusMessage(booking, returnActive)}</p>
+            <div className="layer-route-connector">
+              <div className="layer-point"><span className="dot is-origin" /><strong>{shortPlace(returnActive ? booking.appointment.locationName : booking.pickupAddress)}</strong></div>
+              <div className="layer-point"><span className="dot is-dest" /><strong>{shortPlace(returnActive ? booking.pickupAddress : booking.appointment.locationName)}</strong></div>
             </div>
           </div>
-          <span className="journey-status-icon"><Navigation size={18} /></span>
+
+          <div className="layer-dark-pill">
+            <div className="layer-dark-metrics">
+              <div><span>ETA</span><strong className="is-accent">{liveReadout.big}{/^\d+$/.test(String(liveReadout.big)) ? 'm' : ''}</strong></div>
+              <div><span>PROGRESS</span><strong>{percent}%</strong></div>
+              <div><span>STEP</span><strong>{journey.index + 1}/{journey.stages.length}</strong></div>
+            </div>
+            <div className="layer-dark-bar"><span style={{ width: `${Math.max(percent, 6)}%` }} /></div>
+            {driver && <div className="layer-vehicle-row">
+              <div className="layer-vehicle-copy">
+                <strong>{driver.firstName} · {driver.vehicle}</strong>
+                <small>{driver.registration}</small>
+              </div>
+              <button type="button" className="layer-live-pill" onClick={() => setFocusToken((count) => count + 1)}>
+                <LocateFixed size={13} /> Live Track
+              </button>
+            </div>}
+          </div>
         </div>
+
         <section className="donor-progress-section">
           <div className="journey-block-title"><h3>{returnActive ? 'Return stops' : 'Trip stops'}</h3><span>{journey.index + 1}/{journey.stages.length}</span></div>
           <JourneyStops booking={booking} leg={legName} />
         </section>
+
         <section className="journey-detail-block">
           <div className="journey-block-title"><h3>Trip details</h3><span>{formatTime(returnActive ? booking.appointment.time : booking.pickupTime || '08:45')}</span></div>
           <dl className="journey-facts">
@@ -677,42 +776,61 @@ function DonorJourney({ booking, state, onRequest, onHelp, onBack }) {
           </dl>
           {!returnActive && booking.pickupNotes && <p className="journey-note">{booking.pickupNotes}</p>}
         </section>
+
         {booking.returnRequested && (!returnActive || booking.returnLeg.status === 'awaiting_dispatch') && <div className={`return-message ${booking.returnLeg.status === 'awaiting_dispatch' ? 'return-message-ready' : ''}`}>
           <ShieldCheck size={16} /><div><strong>{booking.returnLeg.status === 'awaiting_dispatch' ? 'Return authorised' : 'Return transport is not automatic'}</strong><p>{booking.returnLeg.status === 'awaiting_dispatch' ? 'SANBS has confirmed you are ready. A return driver will be arranged shortly.' : 'Your return journey will be arranged once the SANBS team confirms you’re ready.'}</p></div>
         </div>}
-        {(driver || booking.returnLeg.status === 'awaiting_dispatch') && <section className="donor-driver-card">
-          <span className="section-kicker">{driver ? (returnActive ? 'YOUR RETURN DRIVER' : 'YOUR DRIVER') : 'RETURN JOURNEY'}</span>
-          {driver ? <div className="donor-driver-detail"><span className="donor-driver-avatar">{driver.initials}</span><div><strong>{driver.firstName}</strong><small>{driver.vehicle}</small></div><span className="vehicle-verified"><CheckCircle2 size={14} />Verified</span></div> : <div className="donor-driver-wait"><Clock3 size={15} /><span>Waiting for operations to assign a return driver.</span></div>}
+
+        {!driver && booking.returnLeg.status === 'awaiting_dispatch' && <section className="donor-driver-card">
+          <span className="section-kicker">RETURN JOURNEY</span>
+          <div className="donor-driver-wait"><Clock3 size={15} /><span>Waiting for operations to assign a return driver.</span></div>
         </section>}
-        <p className="journey-helper">Driver location, route progress and trip status sync as the journey updates.</p>
+
         <button className="donor-help-row" type="button" onClick={onHelp}><CircleHelp size={16} /><span>Need help with your ride?</span><ChevronRight size={16} /></button>
       </div>
     </div>
   </div>;
 }
 
-function RequestFlow({ form, location, step, error, updateField, onNext, onBack, onCancel }) {
-  const steps = ['Your ride', 'Confirm'];
+/* ==========================================================================
+   Booking Sheet ("Where to?") — matches 00.03.42 & 00.24.44
+   ========================================================================== */
+function RequestFlow({ form, location, step, error, updateField, onNext, onBack, onCancel, onHelp }) {
+  const steps = ['Where to?', 'Confirm ride'];
   return <div className="request-flow-screen">
-    <header className="request-flow-header">
-      <button className="flow-back-button" type="button" aria-label="Go back" onClick={onBack}><ArrowLeft size={19} /></button>
-      <div><span className="section-kicker">{step === 0 ? 'BOOK A RIDE' : 'CONFIRM'}</span><strong>{steps[step]}</strong></div>
-      <button className="flow-close-button" type="button" onClick={onCancel} aria-label="Cancel booking"><X size={18} /></button>
-    </header>
-    <div className="request-progress" aria-label={`Step ${step + 1} of ${steps.length}`}>
-      {steps.map((label, index) => <div className={`request-progress-item ${index <= step ? 'progress-active' : ''}`} key={label}><i /></div>)}
+    <div className="request-flow-map-header">
+      {step === 0
+        ? <DonationCentrePickerMap locations={LOCATIONS} selectedLocationId={form.locationId} onSelect={(locationId) => updateField('locationId', locationId)} />
+        : <RouteMap from={form.pickupAddress} to={location.name} progress={0.14} dark hideChrome />}
+      <button className="flow-floating-back" type="button" aria-label="Go back" onClick={onBack}><ArrowLeft size={19} /></button>
+      <button className="flow-floating-close" type="button" onClick={onCancel} aria-label="Cancel booking"><X size={18} /></button>
     </div>
-    <div className="request-flow-content">
-      {step === 0 && <RideStep form={form} location={location} updateField={updateField} />}
-      {step === 1 && <ConfirmStep form={form} location={location} />}
-      {error && <div className="form-error"><X size={14} />{error}</div>}
+
+    <div className="request-sheet-surface">
+      <div className="sheet-grab-bar" aria-hidden="true" />
+      <div className="request-sheet-head">
+        <span className="section-kicker">{step === 0 ? 'BOOK A RIDE · STEP 1 OF 2' : 'CONFIRM · STEP 2 OF 2'}</span>
+        <h1>{steps[step]}</h1>
+      </div>
+
+      <div className="request-flow-content">
+        {step === 0 && <RideStep form={form} location={location} updateField={updateField} />}
+        {step === 1 && <ConfirmStep form={form} location={location} />}
+        {error && <div className="form-error"><X size={14} />{error}</div>}
+      </div>
+
+      <footer className="request-flow-footer">
+        <div className="request-footer-cta-row">
+          <button className="button button-primary button-wide" type="button" onClick={onNext}>
+            {step === 1 ? 'Request ride' : 'Continue'} <ArrowRight size={17} />
+          </button>
+          <button className="button-circle-outline" type="button" onClick={onHelp} aria-label="Transport help" title="Transport help">
+            <CircleHelp size={18} />
+          </button>
+        </div>
+        <span className="secure-line"><ShieldCheck size={13} /> Free for SANBS donors · no payment</span>
+      </footer>
     </div>
-    <footer className="request-flow-footer">
-      <button className="button button-primary button-wide" type="button" onClick={onNext}>
-        {step === 1 ? 'Request ride' : 'Continue'} <ArrowRight size={17} />
-      </button>
-      <span className="secure-line"><ShieldCheck size={13} /> Free for SANBS donors · no payment</span>
-    </footer>
   </div>;
 }
 
@@ -761,7 +879,7 @@ function PickupAddressField({ form, updateField }) {
   };
   const verified = form.pickupCoordinates?.label === form.pickupAddress;
   return <div className="field pickup-address-field">
-    <label className="field-label" htmlFor="verified-pickup-address">Pick us up at</label>
+    <label className="field-label" htmlFor="verified-pickup-address">Pickup address</label>
     <input
       id="verified-pickup-address"
       className="text-input"
@@ -776,7 +894,7 @@ function PickupAddressField({ form, updateField }) {
         updateField('pickupAddress', nextAddress);
         if (nextAddress !== form.pickupCoordinates?.label) updateField('pickupCoordinates', null);
       }}
-      placeholder="Start typing your exact street address"
+      placeholder="Start typing your street address"
     />
     {searching && <small className="pickup-address-status">Searching Gauteng addresses…</small>}
     {verified && <small className="pickup-address-verified"><CheckCircle2 size={13} /> Exact pickup point verified on the map</small>}
@@ -786,11 +904,10 @@ function PickupAddressField({ form, updateField }) {
         <MapPin size={15} /><span>{place.label}</span><small>Select</small>
       </button>)}
     </div>}
-    <small className="pickup-address-hint">Choose the matching result so navigation targets this precise point.</small>
+    <small className="pickup-address-hint">Choose a verified result so navigation targets this exact location.</small>
   </div>;
 }
 
-/* Step 1 — everything that matters, on one screen. No optional fields up front. */
 function RideStep({ form, location, updateField }) {
   const [centrePickerOpen, setCentrePickerOpen] = useState(false);
   const [centreSearch, setCentreSearch] = useState('');
@@ -802,95 +919,87 @@ function RideStep({ form, location, updateField }) {
       distance: distanceBetweenCoordinates(form.pickupCoordinates, centre.coordinates),
     })).sort((a, b) => a.distance - b.distance)[0]
     : null;
-  return <div className="flow-step-content">
-    <div className="flow-step-title"><h1>Where are we taking you?</h1><p>Your appointment details are filled in — just check them.</p></div>
 
-    <section className="donor-centre-picker" aria-labelledby="donor-centre-picker-title">
-      <div className="donor-centre-picker-heading">
-        <div><span className="field-label">Donation centre</span><h2 id="donor-centre-picker-title">Choose a donor centre</h2></div>
-        <span>{LOCATIONS.length} Gauteng locations</span>
-      </div>
-      <DonationCentrePickerMap
-        locations={LOCATIONS}
-        selectedLocationId={form.locationId}
-        onSelect={(locationId) => updateField('locationId', locationId)}
-      />
-      <div className="donor-centre-dropdown">
-        <button
-          className="donor-centre-dropdown-trigger"
-          type="button"
-          aria-haspopup="listbox"
-          aria-expanded={centrePickerOpen}
-          aria-controls="donor-centre-options"
-          onClick={() => {
-            setCentrePickerOpen((open) => !open);
-            setCentreSearch('');
-          }}
-        >
-          <span className="donor-centre-option-pin" aria-hidden="true"><MapPin size={16} /></span>
-          <span><small>Selected donation centre</small><strong>{location.shortName}</strong></span>
-          <ChevronDown size={18} className={centrePickerOpen ? 'is-rotated' : ''} />
-        </button>
-        {centrePickerOpen && <div className="donor-centre-dropdown-panel">
-          <label className="donor-centre-search">
-            <Search size={16} aria-hidden="true" />
-            <input
-              autoFocus
-              type="search"
-              value={centreSearch}
-              onChange={(event) => setCentreSearch(event.target.value)}
-              onKeyDown={(event) => { if (event.key === 'Escape') setCentrePickerOpen(false); }}
-              placeholder="Search Gauteng donor centres"
-              aria-label="Search Gauteng donor centres"
-            />
-            <span>{filteredCentres.length}</span>
-          </label>
-          <div className="donor-centre-options" id="donor-centre-options" role="listbox" aria-label="Gauteng donor centres">
-            {filteredCentres.length ? filteredCentres.map((item) => <button
-              key={item.id}
-              type="button"
-              role="option"
-              aria-selected={form.locationId === item.id}
-              className={`donor-centre-option${form.locationId === item.id ? ' is-selected' : ''}`}
-              onClick={() => {
-                updateField('locationId', item.id);
-                setCentrePickerOpen(false);
-                setCentreSearch('');
-              }}
-            >
-              <span className="donor-centre-option-pin" aria-hidden="true"><MapPin size={16} /></span>
-              <span className="donor-centre-option-copy"><strong>{item.name}</strong><small>{item.address}</small><em>{item.kind} · {item.area}</em></span>
-              <span className="donor-centre-option-check" aria-hidden="true">{form.locationId === item.id ? <Check size={16} /> : null}</span>
-            </button>) : <p className="donor-centre-no-results">No Gauteng centres match “{centreSearch}”.</p>}
-          </div>
-        </div>}
-      </div>
-    </section>
+  return <div className="flow-step-content">
+    <div className="quick-centre-chips" role="group" aria-label="Quick select SANBS centre">
+      {LOCATIONS.slice(0, 3).map((centre) => <button
+        key={centre.id}
+        type="button"
+        className={`quick-centre-chip${form.locationId === centre.id ? ' is-selected' : ''}`}
+        onClick={() => updateField('locationId', centre.id)}
+      >
+        {shortPlace(centre.name)}
+      </button>)}
+    </div>
+
+    <div className="donor-centre-dropdown">
+      <button
+        className="donor-centre-dropdown-trigger"
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={centrePickerOpen}
+        aria-controls="donor-centre-options"
+        onClick={() => {
+          setCentrePickerOpen((open) => !open);
+          setCentreSearch('');
+        }}
+      >
+        <span className="donor-centre-option-pin" aria-hidden="true"><MapPin size={16} /></span>
+        <span><small>Donation centre ({LOCATIONS.length} Gauteng locations)</small><strong>{location.shortName}</strong></span>
+        <ChevronDown size={18} className={centrePickerOpen ? 'is-rotated' : ''} />
+      </button>
+      {centrePickerOpen && <div className="donor-centre-dropdown-panel">
+        <label className="donor-centre-search">
+          <Search size={16} aria-hidden="true" />
+          <input
+            autoFocus
+            type="search"
+            value={centreSearch}
+            onChange={(event) => setCentreSearch(event.target.value)}
+            onKeyDown={(event) => { if (event.key === 'Escape') setCentrePickerOpen(false); }}
+            placeholder="Search Gauteng donor centres"
+            aria-label="Search Gauteng donor centres"
+          />
+          <span>{filteredCentres.length}</span>
+        </label>
+        <div className="donor-centre-options" id="donor-centre-options" role="listbox" aria-label="Gauteng donor centres">
+          {filteredCentres.length ? filteredCentres.map((item) => <button
+            key={item.id}
+            type="button"
+            role="option"
+            aria-selected={form.locationId === item.id}
+            className={`donor-centre-option${form.locationId === item.id ? ' is-selected' : ''}`}
+            onClick={() => {
+              updateField('locationId', item.id);
+              setCentrePickerOpen(false);
+              setCentreSearch('');
+            }}
+          >
+            <span className="donor-centre-option-pin" aria-hidden="true"><MapPin size={16} /></span>
+            <span className="donor-centre-option-copy"><strong>{item.name}</strong><small>{item.address}</small><em>{item.kind} · {item.area}</em></span>
+            <span className="donor-centre-option-check" aria-hidden="true">{form.locationId === item.id ? <Check size={16} /> : null}</span>
+          </button>) : <p className="donor-centre-no-results">No Gauteng centres match “{centreSearch}”.</p>}
+        </div>
+      </div>}
+    </div>
+
+    <PickupAddressField form={form} updateField={updateField} />
+    {closestCentre && Number.isFinite(closestCentre.distance) && <div className="closest-centre-note"><MapPin size={14} /><span><strong>{closestCentre.centre.name}</strong> is closest ({closestCentre.distance.toFixed(1)} km straight line).</span></div>}
 
     <div className="form-two-columns">
       <label className="field"><span className="field-label">Date</span><input className="text-input" type="date" min={localDateString()} value={form.appointmentDate} onChange={(event) => updateField('appointmentDate', event.target.value)} /></label>
       <label className="field"><span className="field-label">Time</span><select className="text-input" value={form.appointmentTime} onChange={(event) => updateField('appointmentTime', event.target.value)}>{['09:00', '10:00', '11:00', '12:00', '13:30', '14:30', '15:30'].map((time) => <option key={time} value={time}>{formatTime(time)}</option>)}</select></label>
     </div>
 
-    <PickupAddressField form={form} updateField={updateField} />
-    {closestCentre && Number.isFinite(closestCentre.distance) && <div className="closest-centre-note"><MapPin size={14} /><span><strong>{closestCentre.centre.name}</strong> is the closest listed centre, about {closestCentre.distance.toFixed(1)} km away by straight line. The centre you selected remains the route destination.</span></div>}
-
-    <div className="ride-summary-strip">
-      <span className="site-pin"><MapPin size={17} /></span>
-      <div><strong>{location.shortName}</strong><small>{location.address}</small></div>
-    </div>
-
     <button type="button" className={`return-toggle-row ${form.returnRequested ? 'selected' : ''}`} onClick={() => updateField('returnRequested', !form.returnRequested)}>
       <span className="check-box">{form.returnRequested && <Check size={13} />}</span>
-      <span><strong>I need a ride home too</strong><small>SANBS confirms when you’re ready to leave.</small></span>
+      <span><strong>Include free return ride home</strong><small>SANBS confirms when you’re ready to leave.</small></span>
     </button>
   </div>;
 }
 
-/* Step 2 — one glanceable confirmation card. */
 function ConfirmStep({ form, location }) {
   return <div className="flow-step-content">
-    <div className="flow-step-title"><h1>Confirm your ride</h1><p>Check the details, then request.</p></div>
     <div className="confirm-route-card">
       <div className="confirm-route-row">
         <span className="route-small-dot dot-origin" />
@@ -903,7 +1012,7 @@ function ConfirmStep({ form, location }) {
       </div>
     </div>
     <div className="confirm-facts">
-      <div><span>Return ride</span><strong>{form.returnRequested ? 'Requested' : 'Not needed'}</strong></div>
+      <div><span>Return ride</span><strong className="is-accent">{form.returnRequested ? 'Included' : 'One-way'}</strong></div>
       <div><span>Contact</span><strong>{form.contactNumber}</strong></div>
     </div>
     <div className="review-note"><ShieldCheck size={16} /><p>We’ll offer the trip to the closest available driver estimated to be within five minutes of your verified pickup. If none is close enough, Transport Ops will dispatch one.</p></div>
@@ -950,17 +1059,49 @@ function HelpAction({ icon: Icon, title, text, onClick }) {
   return <button type="button" className="help-action-row" onClick={() => { onClick?.(); }}><span className="help-action-icon"><Icon size={16} /></span><span><strong>{title}</strong><small>{text}</small></span><ChevronRight size={17} /></button>;
 }
 
-function DonorProfile({ name, phone, pickupAddress, onHelp, onEdit }) {
-  const initials = name.split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+/* ==========================================================================
+   Profile & Settings — matches 00.25.22 & 00.25.37
+   ========================================================================== */
+function DonorProfile({ name, phone, pickupAddress, totalTrips, activeBooking, onHelp, onEdit, onRequest }) {
+  const initials = initialsOf(name);
   return <div className="donor-profile-page">
-    <span className="section-kicker">YOUR ACCOUNT</span><h1>Profile</h1>
-    <div className="donor-profile-card"><span className="donor-profile-large">{initials}</span><div><strong>{name}</strong><small>Donor account</small></div><button className="text-action" type="button" onClick={onEdit}>Edit details</button></div>
-    <div className="profile-group-label">CONTACT DETAILS</div>
-    <div className="profile-detail-row"><span>Mobile</span><strong>{phone}</strong></div>
-    <div className="profile-detail-row"><span>Saved pickup</span><strong>{pickupAddress}</strong></div>
-    <div className="profile-group-label">JOURNEY UPDATES</div>
-    <div className="profile-link-row"><span>In-app status updates</span><strong>On · shared with the transport team</strong></div>
-    <button className="donor-help-row" type="button" onClick={onHelp}><span className="help-row-icon"><CircleHelp size={17} /></span><span><strong>Support & help</strong><small>Get help with a transport booking</small></span><ChevronRight size={17} /></button>
+    <div className="profile-hero-top">
+      <span className="donor-profile-large">{initials}</span>
+      <h1>{name}</h1>
+      <p>{phone} · SANBS Donor</p>
+      <div className="profile-twin-pills">
+        <button type="button" className="button button-primary" onClick={onEdit}>Edit profile</button>
+        <button type="button" className="button button-carbon" onClick={onRequest}>Book a ride</button>
+      </div>
+    </div>
+
+    <div className="profile-dark-metrics">
+      <div className="profile-dark-grid">
+        <div><span>TRIPS</span><strong className="is-accent">{totalTrips}</strong></div>
+        <div><span>STATUS</span><strong>{activeBooking ? 'Active' : 'Ready'}</strong></div>
+        <div><span>DONOR FARE</span><strong>Free</strong></div>
+      </div>
+      <div className="profile-dark-bar"><span style={{ width: activeBooking ? '68%' : '100%' }} /></div>
+    </div>
+
+    <div className="profile-settings-stack">
+      <div className="profile-group-label">SAVED SETTINGS</div>
+      <button type="button" className="profile-pill-row" onClick={onEdit}>
+        <div><small>Mobile number</small><strong>{phone}</strong></div>
+        <ArrowRight size={16} />
+      </button>
+      <div className="profile-pill-row is-static">
+        <div><small>Saved pickup</small><strong>{pickupAddress}</strong></div>
+      </div>
+      <div className="profile-pill-row is-static">
+        <div><small>In-app status updates</small><strong>On · synced with SANBS Ops</strong></div>
+      </div>
+      <button className="profile-pill-row" type="button" onClick={onHelp}>
+        <div><small>Support & dispatch</small><strong>Transport help</strong></div>
+        <ArrowRight size={16} />
+      </button>
+    </div>
+
     <div className="donor-profile-foot"><ShieldCheck size={14} /><span>Only transport details needed for your ride are shared with coordinating teams.</span></div>
   </div>;
 }
@@ -1005,7 +1146,7 @@ function ChangePickupModal({ booking, savedAddress, savedCoordinates, onClose, o
     <PickupAddressField form={draft} updateField={updateDraft} />
     {error && <p className="form-error" role="alert">{error}</p>}
     <div className="pickup-suggestion-row"><span><MapPin size={13} /> Saved home address</span><button type="button" onClick={() => { setDraft({ pickupAddress: savedAddress || DEFAULT_PICKUP, pickupCoordinates: savedCoordinates || null }); setError(''); }}>Use saved address</button></div>
-    <RouteMap from={draft.pickupAddress} to={booking?.appointment.locationName || 'Selected SANBS centre'} compact progress={0.08} helper="Route overview" />
+    <RouteMap from={draft.pickupAddress} to={booking?.appointment.locationName || 'Selected SANBS centre'} compact progress={0.08} dark helper="Route overview" />
     <div className="flow-info-note"><ShieldCheck size={14} /><span>Navigation uses the selected map position, not a guessed suburb centre.</span></div>
   </ModalFrame>;
 }

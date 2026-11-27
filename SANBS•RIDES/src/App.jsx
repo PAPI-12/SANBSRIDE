@@ -39,8 +39,8 @@ const ROLE_HINTS = {
   operations: 'Dispatch the fleet',
 };
 const ROLE_ACCOUNTS = {
-  donor: 'James Peterson',
-  driver: 'Sipho Mokoena',
+  donor: 'Thabo Mokoena',
+  driver: 'James Peterson',
   staff: 'Sam Ndlovu',
   operations: 'Thandi Nkosi',
 };

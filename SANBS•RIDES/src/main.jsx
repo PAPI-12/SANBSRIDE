@@ -126,20 +126,20 @@ function AppRoot() {
 }
 
 const styles = {
-  fatal: { minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: '#f4f1e9', color: '#16191f', fontFamily: 'Inter, system-ui, sans-serif' },
-  card: { width: 'min(100%, 520px)', padding: 28, border: '1px solid #e5e0d3', borderRadius: 18, background: '#fff', boxShadow: '0 16px 48px rgba(22,25,31,.12)' },
-  mark: { width: 42, height: 42, display: 'grid', placeItems: 'center', borderRadius: '50%', background: '#fbe9ea', color: '#d42127', fontWeight: 800, fontSize: 22 },
-  kicker: { margin: '18px 0 7px', color: '#7c0f13', fontSize: 11, fontWeight: 700, letterSpacing: '.12em' },
+  fatal: { minHeight: '100dvh', display: 'grid', placeItems: 'center', padding: 24, background: '#F3F4F6', color: '#0A0B0D', fontFamily: 'Inter, system-ui, sans-serif' },
+  card: { width: 'min(100%, 520px)', padding: 28, border: '1px solid #E5E7EB', borderRadius: 24, background: '#FFFFFF', boxShadow: '0 20px 50px rgba(10,11,13,.1)' },
+  mark: { width: 42, height: 42, display: 'grid', placeItems: 'center', borderRadius: '50%', background: '#0A0B0D', color: '#FF4D53', fontWeight: 800, fontSize: 22 },
+  kicker: { margin: '18px 0 7px', color: '#D42127', fontSize: 11, fontWeight: 700, letterSpacing: '.12em' },
   title: { margin: '0 0 12px', fontSize: 26, lineHeight: 1.15 },
-  body: { margin: 0, color: '#565d65', lineHeight: 1.55 },
+  body: { margin: 0, color: '#5A606D', lineHeight: 1.55 },
   incident: { margin: '16px 0 0', fontSize: 13 },
-  details: { marginTop: 14, color: '#565d65', fontSize: 13 },
-  errorText: { maxHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 12, borderRadius: 8, background: '#f4f1e9', color: '#303640' },
+  details: { marginTop: 14, color: '#5A606D', fontSize: 13 },
+  errorText: { maxHeight: 160, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 12, borderRadius: 12, background: '#F3F4F6', color: '#1F242D' },
   actions: { display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 22 },
-  primaryButton: { minHeight: 42, padding: '0 16px', border: 0, borderRadius: 9, background: '#d42127', color: '#fff', fontWeight: 700, cursor: 'pointer' },
-  secondaryButton: { minHeight: 42, padding: '0 16px', border: '1px solid #d9d4c9', borderRadius: 9, background: '#fff', color: '#16191f', fontWeight: 600, cursor: 'pointer' },
-  notice: { position: 'fixed', zIndex: 100000, right: 14, bottom: 14, width: 'min(440px, calc(100vw - 28px))', display: 'flex', gap: 12, justifyContent: 'space-between', padding: '14px 16px', border: '1px solid #c93a3e', borderRadius: 12, background: '#fff7f7', color: '#2c1b1c', boxShadow: '0 8px 30px rgba(0,0,0,.18)', font: '13px/1.45 Inter, system-ui, sans-serif' },
-  dismiss: { alignSelf: 'flex-start', padding: '0 4px', border: 0, background: 'transparent', color: '#6b2023', fontSize: 22, lineHeight: 1, cursor: 'pointer' },
+  primaryButton: { minHeight: 44, padding: '0 20px', border: 0, borderRadius: 999, background: '#D42127', color: '#FFFFFF', fontWeight: 700, cursor: 'pointer' },
+  secondaryButton: { minHeight: 44, padding: '0 20px', border: '1px solid #E5E7EB', borderRadius: 999, background: '#F3F4F6', color: '#0A0B0D', fontWeight: 600, cursor: 'pointer' },
+  notice: { position: 'fixed', zIndex: 100000, right: 14, bottom: 14, width: 'min(440px, calc(100vw - 28px))', display: 'flex', gap: 12, justifyContent: 'space-between', padding: '14px 16px', border: '1px solid #2A2E36', borderRadius: 16, background: '#0A0B0D', color: '#FFFFFF', boxShadow: '0 12px 32px rgba(0,0,0,.28)', font: '13px/1.45 Inter, system-ui, sans-serif' },
+  dismiss: { alignSelf: 'flex-start', padding: '0 4px', border: 0, background: 'transparent', color: '#9CA3AF', fontSize: 22, lineHeight: 1, cursor: 'pointer' },
 };
 
 const container = document.getElementById('root');

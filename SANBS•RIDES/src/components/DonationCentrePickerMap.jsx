@@ -2,7 +2,10 @@ import React, { useEffect, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 
 function centrePin(L, selected) {
-  const html = `<span class="donor-centre-drop${selected ? ' is-selected' : ''}" aria-hidden="true"><svg viewBox="0 0 32 42"><path d="M16 1C7.7 1 1 7.7 1 16c0 10.3 15 25 15 25s15-14.7 15-25C31 7.7 24.3 1 16 1Z" fill="#D42127" stroke="#fff" stroke-width="2"/><circle cx="16" cy="16" r="5.2" fill="#fff"/><circle cx="16" cy="16" r="2.3" fill="#D42127"/></svg></span>`;
+  const fill = selected ? '#D42127' : '#262A34';
+  const ring = selected ? '#FFFFFF' : '#D1D5DB';
+  const dot = selected ? '#D42127' : '#6B7280';
+  const html = `<span class="donor-centre-drop${selected ? ' is-selected' : ''}" aria-hidden="true"><svg viewBox="0 0 32 42"><path d="M16 1C7.7 1 1 7.7 1 16c0 10.3 15 25 15 25s15-14.7 15-25C31 7.7 24.3 1 16 1Z" fill="${fill}" stroke="${ring}" stroke-width="2"/><circle cx="16" cy="16" r="5.2" fill="#FFFFFF"/><circle cx="16" cy="16" r="2.3" fill="${dot}"/></svg></span>`;
   return L.divIcon({
     className: 'donor-centre-drop-icon',
     html,
@@ -93,5 +96,5 @@ export default function DonationCentrePickerMap({ locations, selectedLocationId,
     });
   }, [locations, selectedLocationId]);
 
-  return <div className="donor-centre-map" ref={hostRef} role="group" aria-label="Map of SANBS donor centres. Select a red drop to choose a centre." />;
+  return <div className="donor-centre-map is-stealth-map" ref={hostRef} role="group" aria-label="Map of SANBS donor centres. Select a pin to choose a centre." />;
 }
