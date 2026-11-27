@@ -77,8 +77,7 @@
 
 /* Staff and Operations consoles: nothing may force the page wider than the viewport. */
 .console-main, .console-page, .staff-workbench, .staff-action-rail, .staff-rail-section,
-.staff-arrivals-board, .staff-recent-list, .dispatch-control-room, .dispatch-primary-column,
-.dispatch-map-card, .dispatch-selected-summary { min-width: 0; max-width: 100%; }
+.staff-arrivals-board, .staff-recent-list { min-width: 0; max-width: 100%; }
 .staff-rail-section, .staff-rail-heading, .staff-rail-empty, .privacy-hint, .privacy-note { overflow-wrap: anywhere; }
 @media (max-width: 1100px) {
   .staff-workbench { grid-template-columns: minmax(0, 1fr) !important; }

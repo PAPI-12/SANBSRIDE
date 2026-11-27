@@ -10,6 +10,7 @@ import {
   ChevronRight,
   FileText,
   MapPin,
+  Plus,
   Search,
   Settings2,
   ShieldCheck,
@@ -65,7 +66,7 @@ export function OperationsApp({ state, actions }) {
   };
 
   return (
-    <div className="console-layout operations-console">
+    <div className={`console-layout operations-console ${view === 'dispatch' ? 'operations-map-mode' : ''}`}>
       <aside className="console-sidebar operations-sidebar">
         <div className="ops-sidebar-brand"><span className="console-workspace-title">Transport<small>Operations</small></span></div>
         <div className="sidebar-section-label">WORKSPACE</div>
@@ -171,92 +172,20 @@ function DispatchView({ state, actions, items, activeTrips, openExceptions, onOp
     .replace(/\s+(Donor Centre|Centre)$/i, '') || 'Johannesburg North';
   const tripLabel = returning ? 'Return journey' : 'Donation pickup';
 
-  return <div className="console-page ops-dispatch-page">
-    <div className="page-title-row">
-      <div>
-        <span className="eyebrow">TRANSPORT DESK · JOHANNESBURG NORTH</span>
-        <h1>Dispatch</h1>
-        <p>Live corridor routing, assignment queue and eligible resources.</p>
-      </div>
-      <div className="page-title-actions">
-        <button type="button" className="button button-secondary button-small" onClick={onViewTrips}>All trips <ArrowRight size={14} /></button>
-      </div>
-    </div>
-
-    <div className="dispatch-control-room">
-      <div className="dispatch-primary-column">
-        <section className="dispatch-map-card" aria-label="Route map">
-          <div className="dispatch-map-card-header">
-            <div>
-              <span className="eyebrow">JOHANNESBURG · ROUTE PREVIEW</span>
-              <strong>{selectedBooking ? `${shortPlaceLabel(routeFrom)} → ${shortPlaceLabel(routeTo)}` : `${areaLabel} · Gauteng`}</strong>
-            </div>
-            <div className="dispatch-map-card-badges">
-              {selectedBooking && <StatusChip booking={selectedBooking} compact />}
-              <span className="map-live-label">LIVE VIEW</span>
-            </div>
+  return <div className="console-page ops-dispatch-page ops-map-page">
+    <div className="dispatch-control-room dispatch-map-first">
+      <aside className="dispatch-feed dispatch-route-sidebar" aria-label="Selected route and dispatch queue">
+        <div className="dispatch-sidebar-brand"><span className="dispatch-rail-title">Route</span><span>TRANSPORT DESK</span></div>
+        <div className="dispatch-route-heading"><div><span className="eyebrow">JOURNEY OVERVIEW</span><h1>Route</h1></div><button type="button" onClick={onViewTrips} aria-label="Open all trips" title="Open all trips"><Plus size={17} /></button></div>
+        {selectedBooking ? <section className="dispatch-route-card" aria-label="Selected journey route">
+          <div className="dispatch-sidebar-stops">
+            <div className="dispatch-sidebar-stop"><i className="dispatch-stop-dot stop-pickup" /><div><small>{returning ? 'PICKUP POINT' : 'DONOR PICKUP'}</small><strong>{routeFrom}</strong><span>{returning ? 'SANBS collection site' : `${formatTime(selectedBooking.pickupTime || '08:45')} · planned pickup`}</span></div></div>
+            <div className="dispatch-sidebar-route-line" />
+            <div className="dispatch-sidebar-stop"><i className="dispatch-stop-dot stop-destination" /><div><small>{returning ? 'DROP-OFF' : 'DONATION SITE'}</small><strong>{routeTo}</strong><span>{returning ? 'Donor home' : `Appointment · ${formatTime(selectedBooking.appointment.time)}`}</span></div></div>
           </div>
-          <div className="dispatch-map-stage">
-            {selectedBooking ? <JourneyMap
-              booking={selectedBooking}
-              leg={legName}
-              from={routeFrom}
-              to={routeTo}
-              controls
-              scrollWheelZoom={false}
-              fitPaddingTopLeft={isCompactMap ? [32, 32] : [44, 44]}
-              fitPaddingBottomRight={isCompactMap ? [32, 56] : [44, 62]}
-              maxFitZoom={13}
-              className="dispatch-live-map"
-            /> : <div className="dispatch-map-empty" role="status"><span><MapPin size={20} /></span><strong>No route selected</strong><p>Select a queued or in-progress journey to preview its route.</p><button type="button" className="button button-secondary button-small" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
-            {selectedBooking && <div className="dispatch-route-summary-pill" aria-hidden="true">
-              <span className="summary-pill-point"><i className="is-origin" /><span>{shortPlaceLabel(routeFrom)}</span></span>
-              <ArrowRight size={12} />
-              <span className="summary-pill-point"><i className="is-dest" /><span>{shortPlaceLabel(routeTo)}</span></span>
-            </div>}
-          </div>
-        </section>
-
-        <div className="dispatch-selected-summary">
-          {selectedBooking ? <section className="dispatch-route-card" aria-label="Selected journey route">
-            <div className="dispatch-route-card-head">
-              <div>
-                <span className="eyebrow">JOURNEY OVERVIEW</span>
-                <strong>{selectedBooking.donorName}</strong>
-              </div>
-              <div className="dispatch-route-reference"><span>{selectedBooking.reference}</span><StatusChip booking={selectedBooking} compact /></div>
-            </div>
-            <div className="dispatch-sidebar-stops">
-              <div className="dispatch-sidebar-stop"><i className="dispatch-stop-dot stop-pickup" /><div><small>{returning ? 'PICKUP POINT' : 'DONOR PICKUP'}</small><strong>{routeFrom}</strong><span>{returning ? 'SANBS collection site' : `${formatTime(selectedBooking.pickupTime || '08:45')} · planned pickup`}</span></div></div>
-              <div className="dispatch-sidebar-route-line" />
-              <div className="dispatch-sidebar-stop"><i className="dispatch-stop-dot stop-destination" /><div><small>{returning ? 'DROP-OFF' : 'DONATION SITE'}</small><strong>{routeTo}</strong><span>{returning ? 'Donor home' : `Appointment · ${formatTime(selectedBooking.appointment.time)}`}</span></div></div>
-            </div>
-            <div className="dispatch-route-actions"><button type="button" className="button button-primary button-wide" onClick={() => selected && needsAssignment ? onAssign(selectedBooking, legName) : onOpen(selectedBooking)}>{selected && needsAssignment ? 'Assign a resource' : 'Open journey details'} <ArrowRight size={14} /></button></div>
-          </section> : <div className="dispatch-sidebar-empty-route"><span className="dispatch-sidebar-empty-icon"><MapPin size={15} /></span><strong>No journey selected</strong><p>Choose a queued or in-progress trip to view its route.</p><button type="button" className="dispatch-side-link" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
-
-          {selectedBooking && <aside className="dispatch-map-selected-card" aria-label={selectedDriver ? 'Assigned driver and trip' : 'Driver assignment'}>
-            <div className="map-selected-topline"><span>{selectedDriver ? 'ASSIGNED DRIVER' : 'DRIVER ASSIGNMENT'}</span>{selected && <StatusChip booking={selectedBooking} compact />}</div>
-            {selectedDriver ? <>
-              <div className="map-driver-profile"><DriverAvatar driver={selectedDriver} /><span><small>{selectedDriver.typeLabel}</small><strong>{selectedDriver.name}</strong></span><span className={`map-driver-availability availability-${driverAvailability}`}><i />{driverAvailability === 'on_trip' ? 'On trip' : driverAvailability === 'available' ? 'Available' : 'Offline'}</span></div>
-              <div className="map-driver-vehicle"><div><small>ASSIGNED VEHICLE</small><strong>{selectedDriver.vehicle}</strong><span>{selectedDriver.registration}</span></div><Truck size={20} /></div>
-              <div className="map-driver-current-trip"><small>CURRENT TRIP · {selectedBooking.reference}</small><strong>{tripLabel}</strong><span>{getStatusMeta(selectedBooking).label}</span></div>
-              <div className="map-driver-quick-actions" aria-label="Driver contact">
-                <button type="button" onClick={() => actions.showToast(`Call ${selectedDriver.name} · ${selectedDriver.phone}`)} aria-label={`Call ${selectedDriver.name}`} title={`Call ${selectedDriver.name}`}><Phone size={16} /></button>
-                <button type="button" onClick={() => actions.showToast(`Message sent to ${selectedDriver.firstName} in the driver app.`)} aria-label={`Message ${selectedDriver.name}`} title={`Message ${selectedDriver.name}`}><MessageSquare size={16} /></button>
-                <button type="button" onClick={() => onAssign(selectedBooking, legName)} aria-label="Reassign this trip" title="Reassign this trip"><X size={16} /></button>
-              </div>
-              <div className="map-selected-actions"><button type="button" className="button button-primary button-wide" onClick={() => onOpen(selectedBooking)}>Open journey <ArrowRight size={14} /></button><button type="button" className="map-change-resource" onClick={() => onAssign(selectedBooking, legName)}>Change resource</button></div>
-            </> : <>
-              <strong className="map-no-driver-title">{selected ? 'No driver assigned yet' : 'No active trip selected'}</strong>
-              <p className="map-no-driver-copy">{selected ? 'Choose an eligible resource to continue this journey.' : 'Select a request from the dispatch queue to see its route.'}</p>
-              <div className="map-selected-actions"><button type="button" className="button button-primary button-wide" onClick={() => selected && needsAssignment ? onAssign(selectedBooking, legName) : onViewTrips()}>{selected && needsAssignment ? 'Assign resource' : 'Browse all trips'} <ArrowRight size={14} /></button>{selected && <button type="button" className="map-change-resource" onClick={() => onOpen(selectedBooking)}>Open journey</button>}</div>
-            </>}
-          </aside>}
-        </div>
-      </div>
-
-      <aside className="dispatch-feed dispatch-route-sidebar" aria-label="Dispatch queue and resources">
-        <div className="dispatch-sidebar-brand"><span className="dispatch-rail-title">Queue &amp; Fleet</span><span>LIVE DISPATCH</span></div>
+          <div className="dispatch-route-reference"><span>{selectedBooking.reference}</span><StatusChip booking={selectedBooking} compact /></div>
+          <div className="dispatch-route-actions"><button type="button" className="button button-primary button-wide" onClick={() => selected && needsAssignment ? onAssign(selectedBooking, legName) : onOpen(selectedBooking)}>{selected && needsAssignment ? 'Assign a resource' : 'Open journey details'} <ArrowRight size={14} /></button></div>
+        </section> : <div className="dispatch-sidebar-empty-route"><span className="dispatch-sidebar-empty-icon"><MapPin size={15} /></span><strong>No journey selected</strong><p>Choose a queued or in-progress trip to view its route.</p><button type="button" className="dispatch-side-link" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
 
         <div className="dispatch-sidebar-metrics" aria-label="Dispatch summary">
           <button type="button" onClick={onViewTrips}><strong>{String(items.length).padStart(2, '0')}</strong><span>To assign</span></button>
@@ -282,29 +211,53 @@ function DispatchView({ state, actions, items, activeTrips, openExceptions, onOp
           {items.length > 4 && <button type="button" className="dispatch-side-link" onClick={onViewTrips}>View all {items.length} trips <ArrowRight size={13} /></button>}
         </section>
 
-        {live.length > 0 && <section className="dispatch-side-section dispatch-side-active">
-          <div className="dispatch-side-section-heading"><div><span className="eyebrow">IN PROGRESS</span><h2>Active trips</h2></div><span className="dispatch-side-count">{activeTrips.length}</span></div>
-          <div className="dispatch-side-queue-list">{live.map((item) => {
-            const key = tripKey(item);
-            const isSelected = selected && key === tripKey(selected);
-            const isReturn = item.legName === 'return';
-            const driver = getDriver(state, item.leg?.driverId);
-            return <article className={`dispatch-side-queue-item ${isSelected ? 'is-selected' : ''}`} key={key}>
-              <button type="button" className="dispatch-side-queue-open" onClick={() => setSelectedKey(key)} aria-pressed={Boolean(isSelected)}>
-                <span className={`dispatch-side-queue-dot is-live ${isReturn ? 'is-return' : ''}`} />
-                <span><strong>{item.booking.donorName}</strong><small>{item.booking.reference} · {driver ? driver.firstName : 'Assigned'}</small></span>
-                <ChevronRight size={15} />
-              </button>
-            </article>;
-          })}</div>
-        </section>}
-
         <section className="dispatch-side-section dispatch-side-resources">
           <div className="dispatch-side-section-heading"><div><span className="eyebrow">OPERATING MODEL</span><h2>{OPERATING_MODELS[state.operatingModel]?.title}</h2></div><button type="button" className="dispatch-side-manage" onClick={onViewDrivers}>Manage <ArrowRight size={12} /></button></div>
           {eligibleResources.length === 0 ? <div className="dispatch-side-empty"><AlertCircle size={15} /><span>No eligible resources available right now.</span></div> : eligibleResources.slice(0, 3).map((driver) => <button type="button" className="dispatch-eligible-resource" key={driver.id} onClick={onViewDrivers}><DriverAvatar driver={driver} size="small" /><span><strong>{driver.firstName}</strong><small>{driver.vehicle}</small></span><i className="availability-dot dot-available" /></button>)}
         </section>
         <p className="dispatch-sidebar-note"><ShieldCheck size={13} /> Status is shared live across all four workspaces.</p>
       </aside>
+
+      <section className="dispatch-map-rail" aria-label="Route map">
+        <div className="dispatch-map-heading"><div><span className="eyebrow">JOHANNESBURG · ROUTE PREVIEW</span><strong>{areaLabel} · Gauteng</strong></div><span className="map-live-label">LIVE VIEW</span></div>
+        <div className="dispatch-map-stage">
+          {selectedBooking ? <JourneyMap
+            booking={selectedBooking}
+            leg={legName}
+            from={routeFrom}
+            to={routeTo}
+            controls
+            scrollWheelZoom
+            fitPaddingTopLeft={isCompactMap ? [28, 36] : [48, 92]}
+            fitPaddingBottomRight={isCompactMap ? [28, 72] : [344, 84]}
+            maxFitZoom={13}
+            className="dispatch-live-map"
+          /> : <div className="dispatch-map-empty" role="status"><span><MapPin size={20} /></span><strong>No route selected</strong><p>Select a queued or in-progress journey to preview its route.</p><button type="button" className="button button-secondary button-small" onClick={onViewTrips}>Browse all trips <ArrowRight size={13} /></button></div>}
+          {selectedBooking && <aside className="dispatch-map-selected-card" aria-label={selectedDriver ? 'Assigned driver and trip' : 'Driver assignment'}>
+            <div className="map-selected-topline"><span>{selectedDriver ? 'DRIVER' : 'DRIVER ASSIGNMENT'}</span>{selected && <StatusChip booking={selectedBooking} compact />}</div>
+            {selectedDriver ? <>
+              <div className="map-driver-profile"><DriverAvatar driver={selectedDriver} /><span><small>{selectedDriver.typeLabel}</small><strong>{selectedDriver.name}</strong></span><span className={`map-driver-availability availability-${driverAvailability}`}><i />{driverAvailability === 'on_trip' ? 'On trip' : driverAvailability === 'available' ? 'Available' : 'Offline'}</span></div>
+              <div className="map-driver-vehicle"><div><small>ASSIGNED VEHICLE</small><strong>{selectedDriver.vehicle}</strong><span>{selectedDriver.registration}</span></div><Truck size={20} /></div>
+              <div className="map-driver-current-trip"><small>CURRENT TRIP · {selectedBooking.reference}</small><strong>{tripLabel}</strong><span>{getStatusMeta(selectedBooking).label}</span></div>
+              <div className="map-driver-quick-actions" aria-label="Driver contact">
+                <button type="button" onClick={() => actions.showToast(`Call ${selectedDriver.name} · ${selectedDriver.phone}`)} aria-label={`Call ${selectedDriver.name}`} title={`Call ${selectedDriver.name}`}><Phone size={16} /></button>
+                <button type="button" onClick={() => actions.showToast(`Message sent to ${selectedDriver.firstName} in the driver app.`)} aria-label={`Message ${selectedDriver.name}`} title={`Message ${selectedDriver.name}`}><MessageSquare size={16} /></button>
+                <button type="button" onClick={() => onAssign(selectedBooking, legName)} aria-label="Reassign this trip" title="Reassign this trip"><X size={16} /></button>
+              </div>
+              <div className="map-selected-actions"><button type="button" className="button button-primary button-wide" onClick={() => onOpen(selectedBooking)}>Open journey <ArrowRight size={14} /></button><button type="button" className="map-change-resource" onClick={() => onAssign(selectedBooking, legName)}>Change resource</button></div>
+            </> : <>
+              <strong className="map-no-driver-title">{selected ? 'No driver assigned yet' : 'No active trip selected'}</strong>
+              <p className="map-no-driver-copy">{selected ? 'Choose an eligible resource to continue this journey.' : 'Select a request from the dispatch queue to see its route.'}</p>
+              <div className="map-selected-actions"><button type="button" className="button button-primary button-wide" onClick={() => selected && needsAssignment ? onAssign(selectedBooking, legName) : onViewTrips()}>{selected && needsAssignment ? 'Assign resource' : 'Browse all trips'} <ArrowRight size={14} /></button>{selected && <button type="button" className="map-change-resource" onClick={() => onOpen(selectedBooking)}>Open journey</button>}</div>
+            </>}
+          </aside>}
+          {selectedBooking && <div className="dispatch-route-summary-pill" aria-hidden="true">
+            <span className="summary-pill-point"><i className="is-origin" /><span>{shortPlaceLabel(routeFrom)}</span></span>
+            <ArrowRight size={12} />
+            <span className="summary-pill-point"><i className="is-dest" /><span>{shortPlaceLabel(routeTo)}</span></span>
+          </div>}
+        </div>
+      </section>
     </div>
   </div>;
 }
