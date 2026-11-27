@@ -119,7 +119,7 @@ export default function App() {
     return initial;
   });
   const [authSession, setAuthSession] = useState(() => loadAuthSession());
-  const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'welcome'));
+  const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'splash'));
   const [registeredAccounts, setRegisteredAccounts] = useState(() => loadRegisteredAccounts());
   const [toast, setToast] = useState(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -346,7 +346,7 @@ export default function App() {
     persistAuthSession(null);
     setAccountOpen(false);
     setNotificationsOpen(false);
-    setAuthScreen('welcome');
+    setAuthScreen('splash');
   }, [persistAuthSession]);
 
   const resetDemo = useCallback(() => {
@@ -1042,7 +1042,7 @@ export default function App() {
                 </button>
                 <button type="button" role="menuitem" className="account-menu-item account-menu-reset" onClick={signOut}>
                   <span className="account-menu-icon"><LogOut size={16} /></span>
-                  <span><strong>Sign out</strong><small>Return to opening screen</small></span>
+                  <span><strong>Sign out</strong><small>Return to sign in</small></span>
                 </button>
               </div>
             </>}
