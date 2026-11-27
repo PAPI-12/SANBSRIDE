@@ -334,7 +334,6 @@ function DonorHome({
   const statusMeta = booking ? getStatusMeta(booking) : null;
   const returnActive = Boolean(booking?.returnRequested && !['not_required', 'waiting_authorisation'].includes(booking.returnLeg.status));
   const activeMapState = booking ? getJourneyMapState(booking, returnActive ? 'return' : 'outbound') : null;
-  const gaugeFill = activeMapState ? Math.max(0, Math.min(1, activeMapState.fillProgress)) : 0;
   const [, setDropClock] = useState(0);
   useEffect(() => {
     if (!activeMapState?.moving) return undefined;
@@ -404,7 +403,9 @@ function DonorHome({
 
   /* ---- active ride state: carbon telemetry hero card ---- */
   const liveReadout = gaugeReadout(booking, returnActive);
-  const progressPct = Math.round(gaugeFill * 100);
+  const progressPct = !activeMapState ? 0 : Math.round(activeMapState.phase === 'to_pickup'
+    ? activeMapState.progress * 35
+    : 35 + activeMapState.progress * 65);
   return <div className="donor-home-page">
     <header className="donor-greeting-row">
       <div className="donor-greeting-copy">
