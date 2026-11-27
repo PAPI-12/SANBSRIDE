@@ -48,9 +48,20 @@ function fitRoute(map, path, {
   maxZoom = 14,
 } = {}) {
   if (path.length < 2) return;
+  const size = map.getSize();
+  if (!size.x || !size.y) return;
+  const clampPair = (start, end, span) => {
+    const maxPad = Math.max(0, span - 80);
+    const sum = start + end;
+    if (sum <= maxPad) return [start, end];
+    const ratio = sum > 0 ? maxPad / sum : 0;
+    return [Math.floor(start * ratio), Math.floor(end * ratio)];
+  };
+  const [padLeft, padRight] = clampPair(paddingTopLeft[0], paddingBottomRight[0], size.x);
+  const [padTop, padBottom] = clampPair(paddingTopLeft[1], paddingBottomRight[1], size.y);
   map.fitBounds(path, {
-    paddingTopLeft,
-    paddingBottomRight,
+    paddingTopLeft: [padLeft, padTop],
+    paddingBottomRight: [padRight, padBottom],
     maxZoom,
     animate: false,
   });
@@ -246,7 +257,7 @@ export default function JourneyMap({
         });
         if (typeof ResizeObserver !== 'undefined') {
           resizeObserver = new ResizeObserver(() => {
-            if (!mapInstance) return;
+            if (disposed || !mapInstance) return;
             mapInstance.invalidateSize({ pan: false });
             if (!navigationStyle && !live.userAdjusted) {
               fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
@@ -255,7 +266,7 @@ export default function JourneyMap({
           resizeObserver.observe(hostRef.current);
         }
         window.setTimeout(() => {
-          if (!mapInstance) return;
+          if (disposed || !mapInstance) return;
           mapInstance.invalidateSize({ pan: false });
           if (!navigationStyle && !live.userAdjusted) {
             fitRoute(mapInstance, fitBoundsList, fitOptionsRef.current);
@@ -273,7 +284,7 @@ export default function JourneyMap({
       mapInstance?.remove();
       liveRef.current = null;
     };
-  }, [retryToken, booking.id, booking.appointment.coordinates?.lat, booking.appointment.coordinates?.lon, booking.appointment.locationId, booking.appointment.locationName, booking.pickupAddress, booking.pickupCoordinates?.lat, booking.pickupCoordinates?.lon, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lat, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lon, clipId, leg, navigationStyle, phase, scrollWheelZoom]);
+  }, [retryToken, booking.id, booking.appointment.coordinates?.lat, booking.appointment.coordinates?.lon, booking.appointment.locationId, booking.appointment.locationName, booking.pickupAddress, booking.pickupCoordinates?.lat, booking.pickupCoordinates?.lon, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverId, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lat, booking[leg === 'return' ? 'returnLeg' : 'outbound']?.driverCoordinates?.lon, clipId, leg, maxFitZoom, navigationStyle, phase, scrollWheelZoom]);
 
   useEffect(() => {
     liveRef.current?.placeCar(progress, mapState.fillProgress);
