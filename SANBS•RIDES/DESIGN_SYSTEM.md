@@ -100,4 +100,24 @@ Three self-hosted `@fontsource` families power all surfaces:
 - **Adaptive Focus Rings:** Light containers apply `#D42127` focus outlines; carbon and dark containers apply `#FFFFFF` focus outlines (`polish.css`).
 - **Touch Floor:** All controls enforce `>= 44×44 px` touch targets on coarse pointers and `<= 760px` viewports.
 - **iOS Auto-Zoom Prevention:** All form inputs step up to `16px` font size on touch / narrow screens.
-- **Interactive Preview:** Run `npm run dev` and open the **Account Menu → Design System** or append `#design-system` to inspect live tokens, play with the 14 journey states, test vector/stealth maps, and copy variables.
+- **Interactive Preview:** Run `npm run dev` to play with the 14 journey states, vector/stealth maps and live telemetry. The full token, WCAG and CI boards live in the separate **Design System Studio** download (`design-system-studio/`, zip at the workspace root) — the prototype itself stays product-only.
+
+---
+
+## 7. Corporate Identity (CI) & Automated Logo CI Pipeline
+
+- **Canonical Mark (`280 × 180` viewBox):** Geometric lowercase **`ride`** wordmark crowned by the **original SANBS intertwined-hearts droplet** above the **`i`**, a continuous road-smile arc sweeping flush under **`r–i`**, and the **original SANBS wordmark type** in crimson tucked under **`d–e`**.
+- **Surface Rules:**
+  - **Paper (`#FFFFFF` / `#F2F2F2`):** `#0A0B0D` Carbon letters + `#D42127` Crimson SANBS droplet & SANBS type (`sanbs-ride-mark.svg`, `sanbs-ride-mark-ink.svg`, `1200×1200` master sheet).
+  - **Carbon (`#0A0B0D`):** `#FFFFFF` Pure White letters + `#E62E35` SANBS Crimson accents (app header, Sign in / Sign up shell).
+  - **Crimson (`#D42127`):** All-white lockup with white ripple waves — the opening splash surface, `180×180` `apple-touch-icon.png`, and the `48×48` `favicon.svg` squircle (`sanbs-ride-mark-white.svg`, `sanbs-ride-icon.svg`).
+- **One Continuous Red Sea (splash → Sign in):** Both auth screens live inside a single shared stage (`.auth-flow-stage`) on solid SANBS Red — three pure parallax wave bands (no heartbeat lines) drifting on perfect 720-unit tiling, with the waterline starting at exactly half the screen height. Because the sea is mounted once inside `AuthFlow`, the waves never restart between screens: on hand-off the sea swells (`stage-swell`) to carry the Sign in card up on the crest (`auth-card-enter` from 52px) while the splash content lifts away — no loader, no colour change, no seam.
+- **Splash Entrance:** the SANBS droplet falls from the top of the viewport and lands on the “i” with a soft squash, releasing white ripple rings from the impact point (`.auth-splash-dropfall` + `.auth-splash-ripple`).
+- **Individual Team Apps (separate downloads, live-synced):** the prototype carries no team-app UI — only an invisible `window.SANBS_TEAM_APP` pin used by the standalone builds. Four self-contained production bundles (`donor/`, `driver/`, `staff/`, `ops/` inside `SANBS-RIDE-team-apps.zip` at the workspace root) deploy independently to any static host; each `app-config.js` sets `window.SANBS_TEAM_APP`, pinning the workspace with **no in-app team switching or team nav** — teams are reached only by opening their own app window. Same-origin windows sync through storage events; different hosts sync through the bundled zero-dependency relay (`sync-server.mjs`, `GET/PUT /state`) via `?sync=https://relay` or `window.SANBS_SYNC_DEFAULT`, mirroring bookings, drivers, notifications and accounts within ~1.5 s. `team-apps/publish-repos.sh` publishes each package as its own repository.
+- **Design System Studio (separate download):** the complete token, WCAG, brand & CI boards ship as their own static app (`design-system-studio/`, `SANBS-RIDE-design-system-studio.zip`) with sources included; the prototype keeps only the token files its product UI consumes.
+- **Continuous Integration (`npm run ci` & `.github/workflows/ci.yml`):**
+  1. `npm run brand:verify` (`scripts/verify-logo.mjs`) validates SVG vector path sync, blood-drop path integrity, PNG dimensions, first-screen `AuthFlow` integration, and zero legacy `76.02 100` remnants.
+  2. `npm test` (`node --test`) validates CSS/JS token parity, WCAG 2.2 AA contrast, domain status parity, and all `STUDIO_MEDIA` / `BRAND_ARTWORK` assets.
+  3. `npm run build` runs the Vite production bundle.
+  4. `npm run check:ssr` (`scripts/check-ssr.mjs`) verifies Vite SSR output for `AuthFlow` (`splash` & `login`) and `App`.
+

@@ -16,7 +16,6 @@ import {
   RADII,
   SPACING,
   STATUS_CHIP_SPECS,
-  STUDIO_MEDIA,
   TYPOGRAPHY,
   Z_INDEX,
   contrastRatio,
@@ -93,9 +92,20 @@ test('Status chip specifications cover 100% of domain STATUS_META states without
 });
 
 test('Brand artwork, stealth map palette, accessibility rules, and manifest align with design system', () => {
-  assert.equal(BRAND_ARTWORK.viewBox, '0 0 76.02 100');
+  assert.equal(BRAND_ARTWORK.viewBox, '0 0 280 180');
   assert.ok(BRAND_ARTWORK.markPath.length > 100);
+  assert.ok(BRAND_ARTWORK.accentDotPath.startsWith('M 86.43'));
+  assert.ok(BRAND_ARTWORK.submarkPath.length > 100);
   assert.ok(BRAND_ARTWORK.dropPath.startsWith('M12 1'));
+  for (const filePath of BRAND_ARTWORK.files) {
+    const rel = filePath.replace(/^\//, '');
+    const full = path.join(rootDir, 'public', rel);
+    assert.ok(fs.existsSync(full), `${filePath} exists in public/`);
+    if (filePath.endsWith('.svg')) {
+      const svg = fs.readFileSync(full, 'utf8');
+      assert.ok(svg.includes(BRAND_ARTWORK.accentDotPath), `${filePath} contains blood-drop path on i`);
+    }
+  }
   assert.equal(MAP_PALETTE.stealth.background, COLORS.stealthBg);
   assert.equal(MAP_PALETTE.stealth.route, COLORS.accentRoute);
   assert.equal(MAP_PALETTE.pins.centreSelectedFill, COLORS.accent);
@@ -105,10 +115,4 @@ test('Brand artwork, stealth map palette, accessibility rules, and manifest alig
   assert.equal(manifest.background_color, COLORS.canvas);
   assert.equal(manifest.theme_color, COLORS.carbon);
 
-  const mediaKeys = Object.keys(STUDIO_MEDIA);
-  assert.ok(mediaKeys.length >= 6, 'STUDIO_MEDIA includes editorial scenes and spot illustrations');
-  for (const key of mediaKeys) {
-    const rel = STUDIO_MEDIA[key].replace(/^\//, '');
-    assert.ok(fs.existsSync(path.join(rootDir, 'public', rel)), `${STUDIO_MEDIA[key]} exists in public/`);
-  }
 });

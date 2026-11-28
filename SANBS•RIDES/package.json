@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --test"
+    "test": "node --test",
+    "brand:verify": "node scripts/verify-logo.mjs",
+    "check:ssr": "node scripts/check-ssr.mjs",
+    "ci": "npm run brand:verify && npm test && npm run build && npm run check:ssr"
   },
   "dependencies": {
     "@fontsource/inter": "^5.3.0",

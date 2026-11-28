@@ -1,0 +1,54 @@
+name: SANBS RIDE CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'arena/**'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  verify-brand-and-build:
+    name: Logo Verification, Tests, Build & SSR
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SANBS•RIDES
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: SANBS•RIDES/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify redesigned blood-drop logo & brand assets
+        run: npm run brand:verify
+
+      - name: Run unit & design-system parity tests
+        run: npm test
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Run Vite SSR & first-screen smoke check
+        run: npm run check:ssr
+
+      - name: Upload built web bundle & brand assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanbs-ride-build-and-brand
+          path: |
+            SANBS•RIDES/dist
+            SANBS•RIDES/public/brand
+            SANBS•RIDES/public/favicon.svg
+          retention-days: 14

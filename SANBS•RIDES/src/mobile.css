@@ -2458,3 +2458,51 @@
 .journey-pin-drop-marker { display: block; width: 40px; height: 50px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, .5)); }
 .journey-pin-drop-marker svg { display: block; width: 100%; height: 100%; }
 .journey-drop-liquid { transition: y .14s linear; }
+
+/* ---- Ride-ready panel: fills the space under Transport support ---- */
+.donor-ready-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 14px;
+  border-radius: 20px;
+  background: var(--paper);
+  box-shadow: 0 10px 26px rgba(10, 11, 13, .07);
+}
+.donor-ready-head { display: flex; flex-direction: column; gap: 2px; }
+.donor-ready-head strong { font-size: 15px; font-weight: 800; letter-spacing: -.01em; }
+.donor-ready-list { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.donor-ready-list li { display: flex; gap: 10px; align-items: flex-start; }
+.donor-ready-list .ready-tick {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: rgba(212, 33, 39, .1);
+  color: var(--accent);
+}
+.donor-ready-list strong { display: block; font-size: 13px; font-weight: 700; }
+.donor-ready-list small { color: var(--muted); font-size: 11.5px; line-height: 1.45; }
+.donor-ready-impact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(212, 33, 39, .07);
+}
+.donor-ready-impact .ready-impact-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #FFFFFF;
+}
+.donor-ready-impact strong { display: block; font-size: 13px; font-weight: 800; }
+.donor-ready-impact small { color: var(--muted); font-size: 11.5px; }

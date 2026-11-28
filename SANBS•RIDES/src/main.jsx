@@ -9,7 +9,6 @@ import './mobile.css';
 import './console.css';
 import './desktop.css';
 import './polish.css';
-import './design-system/showcase.css';
 import '@fontsource/inter/latin-400.css';
 import '@fontsource/inter/latin-500.css';
 import '@fontsource/inter/latin-600.css';

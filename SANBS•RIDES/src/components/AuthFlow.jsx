@@ -7,11 +7,35 @@ import {
   EyeOff,
   Heart,
   LifeBuoy,
-  Palette,
   ShieldCheck,
   Sparkles,
 } from 'lucide-react';
 import { BrandMark } from './Shared.jsx';
+import { BRAND_ARTWORK } from '../design-system/tokens.js';
+
+// Pure wave bands for the shared red "sea" stage: one smooth period per 720
+// units, tiled 4× so the -50% drift loop tiles seamlessly.
+const waveBand = (y, lift) =>
+  `M0 ${y} Q 180 ${y - lift} 360 ${y} T 720 ${y} T 1080 ${y} T 1440 ${y} T 1800 ${y} T 2160 ${y} T 2520 ${y} T 2880 ${y} V320 H0 Z`;
+
+/* One continuous SANBS-Red sea shared by BOTH auth screens. It is mounted once
+   inside AuthFlow, so the waves never restart between splash and Sign in —
+   the hand-off is a true continuation, not a swap. */
+function AuthStageWaves() {
+  return (
+    <div className="auth-stage-waves" aria-hidden="true">
+      <svg className="auth-stage-wave is-slow" viewBox="0 0 2880 320" preserveAspectRatio="none">
+        <path d={waveBand(196, 64)} />
+      </svg>
+      <svg className="auth-stage-wave is-mid" viewBox="0 0 2880 320" preserveAspectRatio="none">
+        <path d={waveBand(216, 54)} />
+      </svg>
+      <svg className="auth-stage-wave is-fast" viewBox="0 0 2880 320" preserveAspectRatio="none">
+        <path d={waveBand(238, 44)} />
+      </svg>
+    </div>
+  );
+}
 
 const WORKSPACES = [
   {
@@ -54,8 +78,8 @@ function LogoSplashScreen({ onComplete }) {
   useEffect(() => {
     const reduced = typeof window !== 'undefined'
       && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-    const holdMs = reduced ? 650 : 2100;
-    const exitMs = reduced ? 160 : 340;
+    const holdMs = reduced ? 650 : 2300;
+    const exitMs = reduced ? 200 : 460;
     let doneTimer = 0;
     const fadeTimer = window.setTimeout(() => {
       setLeaving(true);
@@ -70,7 +94,7 @@ function LogoSplashScreen({ onComplete }) {
   const skipIntro = () => {
     if (leaving) return;
     setLeaving(true);
-    window.setTimeout(onComplete, 180);
+    window.setTimeout(onComplete, 460);
   };
 
   return (
@@ -78,24 +102,27 @@ function LogoSplashScreen({ onComplete }) {
       <span className="auth-splash-spacer" aria-hidden="true" />
 
       <div className="auth-splash-center">
+        <h1 className="sr-only">SANBS RIDE</h1>
         <div className="auth-splash-emblem" aria-hidden="true">
           <span className="auth-splash-ring" />
           <span className="auth-splash-ring is-delayed" />
           <span className="auth-splash-core">
-            <BrandMark size={54} tone="white" />
+            <BrandMark size={92} tone="white" showSubmark hideDrop />
           </span>
-        </div>
-
-        <div className="auth-splash-wordmark">
-          <span className="auth-splash-org">SANBS</span>
-          <h1>RIDE</h1>
+          <span className="auth-splash-ripple" />
+          <span className="auth-splash-ripple is-delayed" />
+          <span className="auth-splash-dropfall">
+            <svg viewBox="70.42 0.2 31.17 41">
+              <path d={BRAND_ARTWORK.accentDotPath} fillRule="evenodd" />
+            </svg>
+          </span>
         </div>
 
         <svg className="auth-splash-ecg" viewBox="0 0 180 28" width="180" height="28" aria-hidden="true">
           <path
             d="M0 14h46l8-10 9 20 8-16 6 6h103"
             fill="none"
-            stroke="rgba(255, 77, 83, .2)"
+            stroke="rgba(255, 255, 255, .28)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -104,18 +131,13 @@ function LogoSplashScreen({ onComplete }) {
             className="auth-splash-ecg-line"
             d="M0 14h46l8-10 9 20 8-16 6 6h103"
             fill="none"
-            stroke="#FF4D53"
+            stroke="#FFFFFF"
             strokeWidth="2.2"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
         </svg>
 
-        <p className="auth-splash-tagline">Donor transport · Gauteng</p>
-
-        <div className="auth-splash-progress" aria-hidden="true">
-          <span />
-        </div>
       </div>
 
       <button
@@ -128,6 +150,7 @@ function LogoSplashScreen({ onComplete }) {
       >
         Tap to continue
       </button>
+
     </div>
   );
 }
@@ -140,7 +163,6 @@ export function AuthFlow({
   onEnterDemo,
   onLogin,
   onSignup,
-  onOpenDesignSystem,
   onToast,
 }) {
   const [role, setRole] = useState(defaultRole);
@@ -168,10 +190,6 @@ export function AuthFlow({
     setSignupError('');
     onNavigate(nextMode);
   };
-
-  if (screen === 'splash') {
-    return <LogoSplashScreen onComplete={() => onNavigate('login')} />;
-  }
 
   const handleLoginSubmit = (event) => {
     event.preventDefault();
@@ -245,7 +263,12 @@ export function AuthFlow({
   };
 
   return (
-    <div className="auth-minimal-shell">
+    <div className={`auth-flow-stage${screen === 'splash' ? '' : ' is-handoff'}`}>
+      <AuthStageWaves />
+      {screen === 'splash' ? (
+        <LogoSplashScreen onComplete={() => onNavigate('login')} />
+      ) : (
+      <div className="auth-minimal-shell">
       <div className="auth-minimal-stack">
         <main className="auth-minimal-card" aria-label={mode === 'login' ? 'Sign in' : 'Sign up'}>
         <div className="auth-minimal-brand">
@@ -255,8 +278,7 @@ export function AuthFlow({
             onClick={() => onNavigate('splash')}
             title="Replay opening animation"
           >
-            <BrandMark size={24} tone="accent" />
-            <span>SANBS <strong>RIDE</strong></span>
+            <BrandMark size={34} tone="ink" showSubmark />
           </button>
 
           <div className="auth-mode-switch" role="tablist" aria-label="Authentication mode">
@@ -508,17 +530,9 @@ export function AuthFlow({
           </div>
         )}
         </main>
-        {onOpenDesignSystem && (
-          <button
-            type="button"
-            className="auth-ds-link"
-            onClick={onOpenDesignSystem}
-          >
-            <Palette size={13} aria-hidden="true" />
-            <span>Explore SANBS RIDE Design System</span>
-          </button>
-        )}
       </div>
+      </div>
+      )}
     </div>
   );
 }

@@ -264,3 +264,16 @@
 /* Driver trip map: a readable size so the route, car and both pins are all visible. */
 .driver-live-map-frame { height: 260px !important; min-height: 260px; position: relative; }
 .driver-live-map-canvas { height: 100% !important; }
+
+/* ---- Standalone team-app notice in the account menu ---- */
+.account-menu-standalone {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(212, 33, 39, .08);
+  font-size: 12.5px;
+}
+.account-menu-standalone strong { display: block; font-weight: 700; }
+.account-menu-standalone small { color: var(--muted); }

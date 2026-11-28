@@ -398,6 +398,26 @@ function DonorHome({
           <ChevronRight size={16} />
         </button>
       </div>
+
+      <section className="donor-ready-panel" aria-label="Ride-ready checklist and impact">
+        <div className="donor-ready-head">
+          <span className="eyebrow">BEFORE YOUR RIDE</span>
+          <strong>Ride-ready checklist</strong>
+        </div>
+        <ul className="donor-ready-list">
+          <li><span className="ready-tick"><Check size={13} /></span><span><strong>Hydrate well</strong><small>Water the day before and the morning of your collection.</small></span></li>
+          <li><span className="ready-tick"><Check size={13} /></span><span><strong>Eat a normal meal</strong><small>Two to three hours before donating — never arrive fasted.</small></span></li>
+          <li><span className="ready-tick"><Check size={13} /></span><span><strong>ID or donor card ready</strong><small>Speeds up reception at the donor centre.</small></span></li>
+          <li><span className="ready-tick"><Check size={13} /></span><span><strong>Loose sleeves</strong><small>Makes the collection quicker and more comfortable.</small></span></li>
+        </ul>
+        <div className="donor-ready-impact">
+          <span className="ready-impact-mark" aria-hidden="true"><HeartHandshake size={16} /></span>
+          <div>
+            <strong>{totalTrips} free ride{totalTrips === 1 ? '' : 's'} logged</strong>
+            <small>Every SANBS RIDE trip keeps a Gauteng donation slot filled.</small>
+          </div>
+        </div>
+      </section>
     </div>;
   }
 

@@ -1181,8 +1181,57 @@ select.text-input {
   min-height: 100dvh;
   width: 100%;
   overflow-x: hidden;
-  background: var(--carbon);
+  background: var(--accent);
 }
+
+/* ---- Shared red "sea" stage: one continuous world for both auth screens ---- */
+.auth-flow-stage {
+  position: relative;
+  flex: 1 0 auto;
+  width: 100%;
+  min-height: 100svh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.auth-stage-waves {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  transform-origin: 50% 100%;
+}
+
+.auth-flow-stage.is-handoff .auth-stage-waves {
+  animation: stage-swell 1.15s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes stage-swell {
+  0% { transform: scaleY(1); }
+  42% { transform: scaleY(1.22); }
+  100% { transform: scaleY(1); }
+}
+
+/* Full-height layers: the topmost crest of the slow band sits at exactly 50%
+   of the viewport, so the sea visibly starts half way up the screen. */
+.auth-stage-wave {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 200%;
+  height: 100%;
+  animation: splash-wave-drift 12s linear infinite;
+}
+
+.auth-stage-wave.is-mid { animation-duration: 9s; }
+.auth-stage-wave.is-fast { animation-duration: 6.5s; }
+
+.auth-stage-wave path { fill: rgba(255, 255, 255, .07); }
+.auth-stage-wave.is-mid path { fill: rgba(255, 255, 255, .1); }
+.auth-stage-wave.is-fast path { fill: rgba(255, 255, 255, .14); }
+
+
 
 /* ---- Stage 1: Animated Logo Splash ---- */
 @keyframes splash-enter {
@@ -1237,21 +1286,21 @@ select.text-input {
   gap: 20px;
   overflow: hidden;
   padding: max(20px, env(safe-area-inset-top)) 20px max(22px, env(safe-area-inset-bottom));
-  background-color: var(--carbon);
-  background-image:
-    radial-gradient(520px 380px at 50% 44%, rgba(212, 33, 39, .24), transparent 70%),
-    linear-gradient(0deg, rgba(255, 255, 255, .025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
-  background-size: auto, 48px 48px, 48px 48px;
+  background: transparent;
   color: #FFFFFF;
   cursor: pointer;
   user-select: none;
-  transition: opacity .34s ease, transform .34s cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 1;
 }
 
 .auth-splash-screen.is-leaving {
+  opacity: 1;
+  transform: none;
+}
+
+.auth-splash-screen.is-leaving .auth-splash-hint {
   opacity: 0;
-  transform: scale(1.03);
+  transition: opacity .4s ease;
 }
 
 .auth-splash-spacer {
@@ -1274,17 +1323,17 @@ select.text-input {
   position: relative;
   display: grid;
   place-items: center;
-  width: 110px;
-  height: 110px;
+  width: 236px;
+  height: 158px;
   flex: 0 0 auto;
   animation: splash-enter .55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .auth-splash-ring {
   position: absolute;
-  inset: 6px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(255, 77, 83, .72);
+  inset: 4px;
+  border-radius: 42px;
+  border: 1px solid rgba(255, 255, 255, .45);
   animation: splash-ring-pulse 2s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
@@ -1297,14 +1346,16 @@ select.text-input {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 86px;
-  height: 86px;
-  border-radius: 50%;
-  background: linear-gradient(155deg, #E22A31 0%, #B7181E 100%);
-  box-shadow:
-    0 20px 44px rgba(212, 33, 39, .45),
-    inset 0 1px 0 rgba(255, 255, 255, .28);
-  animation: splash-heartbeat 1.5s ease-in-out infinite;
+  width: 204px;
+  height: 132px;
+  border-radius: 34px;
+  background: transparent;
+  animation: splash-heartbeat 1.8s ease-in-out infinite;
+}
+
+.auth-splash-core .brand-mark {
+  height: 92px;
+  width: auto;
 }
 
 .auth-splash-wordmark {
@@ -1348,31 +1399,14 @@ select.text-input {
 }
 
 .auth-splash-tagline {
-  color: #B6BDC9;
+  color: rgba(255, 255, 255, .88);
   font-size: 13px;
   font-weight: 500;
   letter-spacing: .04em;
   animation: splash-fade-up .5s ease .55s both;
 }
 
-.auth-splash-progress {
-  width: 120px;
-  height: 3px;
-  margin-top: 4px;
-  border-radius: var(--pill);
-  background: rgba(255, 255, 255, .14);
-  overflow: hidden;
-}
-
-.auth-splash-progress span {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--pill);
-  background: var(--accent-bright);
-  transform-origin: left center;
-  animation: splash-progress-fill 2s cubic-bezier(0.22, 1, 0.36, 1) .1s both;
-}
+.auth-splash-progress { display: none; }
 
 .auth-splash-hint {
   flex: 0 0 auto;
@@ -1380,7 +1414,7 @@ select.text-input {
   border: 0;
   border-radius: var(--pill);
   background: transparent;
-  color: #9CA3AF;
+  color: rgba(255, 255, 255, .78);
   font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
@@ -1388,9 +1422,79 @@ select.text-input {
 }
 .auth-splash-hint:hover { color: #FFFFFF; }
 
+/* ---- Full-screen ripple waves + seamless Carbon curtain hand-off ---- */
+@keyframes splash-wave-drift {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.auth-splash-ripple {
+  position: absolute;
+  left: 90.4px;
+  top: 43.6px;
+  width: 140px;
+  height: 140px;
+  margin: -70px 0 0 -70px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .38);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1;
+  animation: splash-ripple-expand 2.6s cubic-bezier(0.22, 1, 0.36, 1) .44s infinite;
+}
+
+.auth-splash-ripple.is-delayed { animation-delay: 1.74s; }
+
+.auth-splash-dropfall {
+  position: absolute;
+  left: 90.4px;
+  top: 43.6px;
+  width: 15.93px;
+  height: 20.96px;
+  z-index: 2;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+  transform: translate(-50%, -50%);
+  animation: splash-drop-fall .95s cubic-bezier(0.34, 0.02, 0.4, 1) both;
+}
+
+.auth-splash-dropfall svg { display: block; width: 100%; height: 100%; }
+.auth-splash-dropfall svg path { fill: #FFFFFF; }
+
+@keyframes splash-drop-fall {
+  0% { transform: translate(-50%, -50%) translateY(-52vh) scale(1); opacity: 0; }
+  12% { opacity: 1; }
+  46% { transform: translate(-50%, -50%) translateY(0) scale(1); }
+  58% { transform: translate(-50%, -50%) scale(1.18, 0.82); }
+  72% { transform: translate(-50%, -50%) scale(0.94, 1.08); }
+  86% { transform: translate(-50%, -50%) scale(1.02, 0.98); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes splash-ripple-expand {
+  0% { transform: scale(0.35); opacity: .8; }
+  100% { transform: scale(9); opacity: 0; }
+}
+
+.auth-splash-spacer,
+.auth-splash-center,
+.auth-splash-hint {
+  position: relative;
+  z-index: 1;
+}
+
+.auth-splash-screen.is-leaving .auth-splash-center {
+  animation: splash-center-out .42s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+
+@keyframes splash-center-out {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(0.94) translateY(-14px); }
+}
+
 /* ---- Stage 2: Simpler Centered Sign In / Sign Up Screen ---- */
 @keyframes auth-card-enter {
-  0% { opacity: 0; transform: translateY(14px) scale(0.985); }
+  0% { opacity: 0; transform: translateY(52px) scale(0.97); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
@@ -1404,12 +1508,9 @@ select.text-input {
   align-items: center;
   justify-content: center;
   padding: max(18px, env(safe-area-inset-top)) 16px max(22px, env(safe-area-inset-bottom));
-  background-color: var(--carbon);
-  background-image:
-    radial-gradient(560px 380px at 50% 0%, rgba(212, 33, 39, .18), transparent 70%),
-    linear-gradient(0deg, rgba(255, 255, 255, .025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
-  background-size: auto, 48px 48px, 48px 48px;
+  background: transparent;
+  position: relative;
+  z-index: 1;
 }
 
 .auth-minimal-stack {
@@ -1431,31 +1532,10 @@ select.text-input {
   border-radius: 26px;
   background: var(--paper);
   box-shadow: 0 28px 64px rgba(0, 0, 0, .48);
-  animation: auth-card-enter .38s var(--ease-out) both;
+  animation: auth-card-enter .45s var(--ease-out) both;
 }
 
-.auth-ds-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 40px;
-  padding: 6px 14px;
-  border: 1px solid var(--carbon-line);
-  border-radius: var(--pill);
-  background: rgba(20, 22, 27, 0.72);
-  color: var(--muted-on-dark);
-  font-family: var(--font);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color var(--dur-fast) var(--ease-standard), border-color var(--dur-fast) var(--ease-standard), background-color var(--dur-fast) var(--ease-standard);
-}
 
-.auth-ds-link:hover {
-  color: var(--white);
-  border-color: var(--accent-bright);
-  background: var(--carbon-2);
-}
 
 .auth-minimal-brand {
   display: flex;
@@ -1480,6 +1560,10 @@ select.text-input {
   white-space: nowrap;
 }
 .auth-brand-home strong { font-weight: 800; }
+.auth-brand-home .brand-mark {
+  height: 34px;
+  width: auto;
+}
 
 .auth-mode-switch {
   display: inline-grid;
@@ -1666,13 +1750,19 @@ select.text-input {
   .auth-splash-core,
   .auth-splash-wordmark,
   .auth-splash-ecg-line,
-  .auth-splash-tagline,
-  .auth-splash-progress span,
   .auth-splash-hint,
+  .auth-stage-wave,
+  .auth-flow-stage.is-handoff .auth-stage-waves,
+  .auth-splash-ripple,
+  .auth-splash-dropfall,
   .auth-minimal-card {
     animation: none !important;
   }
   .auth-splash-ecg-line {
     stroke-dashoffset: 0;
+  }
+  .auth-splash-screen.is-leaving .auth-splash-center {
+    animation: none !important;
+    opacity: 0;
   }
 }

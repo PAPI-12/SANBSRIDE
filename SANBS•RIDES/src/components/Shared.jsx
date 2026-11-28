@@ -14,20 +14,46 @@ import {
 } from '../domain.js';
 import { BRAND_ARTWORK, COLORS, MAP_PALETTE } from '../design-system/tokens.js';
 
-export function BrandMark({ size = 30, tone = 'white', color = '', className = '' }) {
-  const fill = color || (tone === 'white' ? COLORS.white : tone === 'ink' ? COLORS.ink : 'var(--accent)');
+export function BrandMark({ size = 32, tone = 'ink', color = '', showSubmark = false, hideDrop = false, className = '' }) {
+  const isLightOnDark = tone === 'light' || tone === 'light-on-dark';
+  const isMonoWhite = tone === 'white';
+  const isMonoCrimson = tone === 'red' || tone === 'crimson';
+
+  const primaryFill =
+    color ||
+    (isMonoWhite || isLightOnDark
+      ? COLORS.white
+      : isMonoCrimson
+      ? COLORS.accent
+      : COLORS.ink);
+
+  const accentFill =
+    color ||
+    (isMonoWhite
+      ? COLORS.white
+      : isLightOnDark
+      ? COLORS.accentRoute
+      : COLORS.accent);
+
   const height = size;
   const width = size * BRAND_ARTWORK.aspectRatio;
-  return <svg
-    className={`brand-mark ${className}`.trim()}
-    width={width.toFixed(2)}
-    height={height}
-    viewBox={BRAND_ARTWORK.viewBox}
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path d={BRAND_ARTWORK.markPath} fill={fill} fillRule="evenodd" />
-  </svg>;
+  return (
+    <svg
+      className={`brand-mark ${className}`.trim()}
+      width={width.toFixed(2)}
+      height={height}
+      viewBox={BRAND_ARTWORK.viewBox}
+      aria-label="SANBS RIDE"
+      role="img"
+      focusable="false"
+    >
+      <path d={BRAND_ARTWORK.markPath} fill={primaryFill} fillRule="evenodd" />
+      {!hideDrop && <path d={BRAND_ARTWORK.accentDotPath} fill={accentFill} fillRule="evenodd" />}
+      {showSubmark && (
+        <path d={BRAND_ARTWORK.submarkPath} fill={accentFill} fillRule="evenodd" />
+      )}
+    </svg>
+  );
 }
 
 export function BrandDefs() {
@@ -36,10 +62,15 @@ export function BrandDefs() {
 
 export function SanbsBrand({ className = '', compact = false, light = false }) {
   const classes = ['brand', compact ? 'brand-compact' : '', light ? 'brand-light' : '', className].filter(Boolean).join(' ');
-  return <span className={classes}>
-    <BrandMark size={30} tone={light ? 'white' : 'accent'} />
-    {!compact && <span className="brand-word">RIDE</span>}
-  </span>;
+  return (
+    <span className={classes}>
+      <BrandMark
+        size={compact ? 26 : 33}
+        tone={light ? 'light-on-dark' : 'ink'}
+        showSubmark={!compact}
+      />
+    </span>
+  );
 }
 
 export function StatusChip({ booking, status, compact = false }) {
