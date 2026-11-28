@@ -43,6 +43,9 @@ jobs:
       - name: Run Vite SSR & first-screen smoke check
         run: npm run check:ssr
 
+      - name: Package & verify the four role team apps
+        run: npm run package:all
+
       - name: Upload built web bundle & brand assets
         uses: actions/upload-artifact@v4
         with:
@@ -52,3 +55,19 @@ jobs:
             SANBS•RIDES/public/brand
             SANBS•RIDES/public/favicon.svg
           retention-days: 14
+
+      - name: Upload the four deployable role team apps
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanbs-ride-team-apps
+          path: |
+            team-apps/donor
+            team-apps/driver
+            team-apps/staff
+            team-apps/ops
+            team-apps/sanbs-ride-donor-app.zip
+            team-apps/sanbs-ride-driver-app.zip
+            team-apps/sanbs-ride-staff-app.zip
+            team-apps/sanbs-ride-ops-app.zip
+          retention-days: 14
+          if-no-files-found: error

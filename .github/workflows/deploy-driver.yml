@@ -1,0 +1,93 @@
+name: Deploy · Driver app
+
+# SANBS RIDE Driver team app — packaged and deployed on its own.
+# One workflow per role (donor, driver, staff, ops) so each app can be built,
+# released and hosted completely separately. Trigger it from the Actions tab to
+# deploy just this role, or let a push to main refresh its artifact.
+#
+# Hosting routes for this role are documented in deploy/DEPLOY_ROLES.md;
+# its dedicated repository (optional) is sanbs-ride-driver-app.
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_pages:
+        description: Also publish this role to this repository's GitHub Pages site
+        type: boolean
+        default: false
+  push:
+    branches:
+      - main
+  release:
+    types:
+      - published
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-driver-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  package-driver:
+    name: Package Driver team app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: SANBS•RIDES/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: SANBS•RIDES
+
+      - name: Verify redesigned blood-drop logo & brand assets
+        run: npm run brand:verify
+        working-directory: SANBS•RIDES
+
+      - name: Build production bundle
+        run: npm run build
+        working-directory: SANBS•RIDES
+
+      - name: Package & verify the driver team app
+        run: node SANBS•RIDES/scripts/package-team-app.mjs --role driver --zip --verify
+
+      - name: Run unit, design-system & team-app contract tests
+        run: npm test
+        working-directory: SANBS•RIDES
+
+      - name: Upload driver deployment (folder + zip)
+        uses: actions/upload-artifact@v4
+        with:
+          name: sanbs-ride-driver-app
+          path: |
+            team-apps/driver
+            team-apps/sanbs-ride-driver-app.zip
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Attach the driver zip to the release
+        if: github.event_name == 'release'
+        run: gh release upload "${{ github.event.release.tag_name }}" team-apps/sanbs-ride-driver-app.zip --clobber
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload GitHub Pages artifact
+        if: ${{ inputs.publish_pages == true }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: team-apps/driver
+
+      - name: Deploy to GitHub Pages
+        if: ${{ inputs.publish_pages == true }}
+        uses: actions/deploy-pages@v4
