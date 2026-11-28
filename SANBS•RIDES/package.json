@@ -10,6 +10,11 @@
     "test": "node --test",
     "brand:verify": "node scripts/verify-logo.mjs",
     "check:ssr": "node scripts/check-ssr.mjs",
+    "package:donor": "node scripts/package-team-app.mjs --role donor --zip --verify",
+    "package:driver": "node scripts/package-team-app.mjs --role driver --zip --verify",
+    "package:staff": "node scripts/package-team-app.mjs --role staff --zip --verify",
+    "package:ops": "node scripts/package-team-app.mjs --role ops --zip --verify",
+    "package:all": "node scripts/package-team-app.mjs --role all --zip --verify",
     "ci": "npm run brand:verify && npm test && npm run build && npm run check:ssr"
   },
   "dependencies": {
