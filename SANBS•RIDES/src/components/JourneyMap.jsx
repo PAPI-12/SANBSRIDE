@@ -3,15 +3,16 @@ import { Compass, LocateFixed } from 'lucide-react';
 import { friendlyServiceMessage } from '../services/http.js';
 import { getJourneyMapState } from '../domain.js';
 import { getBookingRoute } from '../services/routing.js';
+import { BRAND_ARTWORK, MAP_PALETTE } from '../design-system/tokens.js';
 
 const OSM_TILES = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-const DROP_PATH = 'M12 1C12 1 2.5 12.5 2.5 19a9.5 9.5 0 0 0 19 0C21.5 12.5 12 1 12 1Z';
+const DROP_PATH = BRAND_ARTWORK.dropPath;
 const HOME_PIN = '<span class="journey-pin journey-pin-home" aria-hidden="true"><span class="journey-origin-beacon"></span></span>';
 const CAR_PIN = '<span class="journey-pin journey-pin-car"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 16V11l2-5h10l2 5v5"/><path d="M3 11h18v5H3z"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg></span>';
 const NAVIGATION_PIN = '<span class="journey-pin journey-pin-navigation" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 5 5 42l19-9 19 9L24 5Z"/></svg></span>';
 
 function whiteDropPin(clipId) {
-  return `<span class="journey-pin-drop-marker"><svg viewBox="0 0 24 30" aria-hidden="true"><defs><clipPath id="${clipId}"><path d="${DROP_PATH}"/></clipPath></defs><path d="${DROP_PATH}" fill="#181B22"/><rect class="journey-drop-liquid" x="0" y="30" width="24" height="30" fill="#D42127" clip-path="url(#${clipId})"/><path d="${DROP_PATH}" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="18.2" r="2.6" fill="#FFFFFF" opacity=".92"/></svg></span>`;
+  return `<span class="journey-pin-drop-marker"><svg viewBox="0 0 24 30" aria-hidden="true"><defs><clipPath id="${clipId}"><path d="${DROP_PATH}"/></clipPath></defs><path d="${DROP_PATH}" fill="${MAP_PALETTE.pins.dropFill}"/><rect class="journey-drop-liquid" x="0" y="30" width="24" height="30" fill="${MAP_PALETTE.pins.dropLiquid}" clip-path="url(#${clipId})"/><path d="${DROP_PATH}" fill="none" stroke="${MAP_PALETTE.pins.dropStroke}" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="18.2" r="2.6" fill="${MAP_PALETTE.pins.dropStroke}" opacity=".92"/></svg></span>`;
 }
 
 function pointAlongRoute(path, fraction) {
@@ -185,10 +186,10 @@ export default function JourneyMap({
           L.polyline(path, { color: '#272B35', weight: 9, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         } else {
           L.polyline(path, { color: 'rgba(255, 59, 66, 0.24)', weight: 12, opacity: 1, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
-          L.polyline(path, { color: '#2D323E', weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+          L.polyline(path, { color: MAP_PALETTE.stealth.routeBase, weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         }
-        L.polyline(path, { color: '#FF3B42', weight: navigationStyle ? 4.5 : 3.5, opacity: 0.42, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
-        const travelled = L.polyline([path[0]], { color: '#FF3B42', weight: navigationStyle ? 6 : 5.5, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+        L.polyline(path, { color: MAP_PALETTE.stealth.route, weight: navigationStyle ? 4.5 : 3.5, opacity: 0.42, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
+        const travelled = L.polyline([path[0]], { color: MAP_PALETTE.stealth.route, weight: navigationStyle ? 6 : 5.5, lineCap: 'round', lineJoin: 'round' }).addTo(mapInstance);
         const pickupMarker = L.marker([route.pickup.lat, route.pickup.lon], {
           icon: pinIcon(HOME_PIN, [26, 26], [13, 13]), keyboard: false, title: `Verified pickup: ${booking.pickupAddress}`,
           opacity: navigationStyle ? 0 : 1,

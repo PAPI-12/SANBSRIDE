@@ -21,6 +21,7 @@ const DonorApp = lazy(() => import('./roles/DonorApp.jsx').then((m) => ({ defaul
 const DriverApp = lazy(() => import('./roles/DriverApp.jsx').then((m) => ({ default: m.DriverApp })));
 const StaffApp = lazy(() => import('./roles/StaffApp.jsx').then((m) => ({ default: m.StaffApp })));
 const OperationsApp = lazy(() => import('./roles/OperationsApp.jsx').then((m) => ({ default: m.OperationsApp })));
+
 import { BrandDefs, RelativeStamp, SanbsBrand } from './components/Shared.jsx';
 import { AuthFlow } from './components/AuthFlow.jsx';
 
@@ -107,6 +108,17 @@ function formatDisplayName(identifier = '', fallback = 'SANBS Member') {
   return clean;
 }
 
+/* Standalone team-app builds (separate downloads) set window.SANBS_TEAM_APP in
+   their app-config.js. When present, the workspace is pinned to that team and
+   the role switcher / team menu are hidden — each team is reached by opening
+   its own app window, never by switching inside the app. The prototype itself
+   runs with no config and keeps its normal in-app workspace switcher. */
+function getTeamAppRole() {
+  if (typeof window === 'undefined') return null;
+  const role = window.SANBS_TEAM_APP;
+  return ROLE_ORDER.includes(role) ? role : null;
+}
+
 export default function App() {
   const [data, setData] = useState(() => {
     const initial = loadInitialState();
@@ -119,8 +131,9 @@ export default function App() {
     return initial;
   });
   const [authSession, setAuthSession] = useState(() => loadAuthSession());
-  const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'welcome'));
+  const [authScreen, setAuthScreen] = useState(() => (loadAuthSession() ? 'authenticated' : 'splash'));
   const [registeredAccounts, setRegisteredAccounts] = useState(() => loadRegisteredAccounts());
+  const [pinnedRole] = useState(() => getTeamAppRole());
   const [toast, setToast] = useState(null);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -161,6 +174,66 @@ export default function App() {
   }, [data.role]);
 
   useEffect(() => () => window.clearTimeout(timer.current), []);
+
+  /* A standalone team-app window pins its workspace role for the whole tab. */
+  useEffect(() => {
+    if (!pinnedRole) return;
+    setData((current) => (current.role === pinnedRole ? current : { ...current, role: pinnedRole }));
+  }, [pinnedRole]);
+
+  /* Optional remote sync relay — separately deployed team apps exchange state
+     revisions with the tiny relay in team-apps/sync-server.mjs (configured via
+     window.SANBS_SYNC_URL or ?sync=https://relay), so even apps on different
+     origins or hosts stay in sync. Same-origin windows additionally sync
+     through storage events with no server at all. */
+  const syncUrl = typeof window !== 'undefined' ? (window.SANBS_SYNC_URL || '') : '';
+  const dataRef = useRef(data);
+  const lastRemoteJsonRef = useRef('');
+  useEffect(() => { dataRef.current = data; }, [data]);
+  useEffect(() => {
+    if (!syncUrl) return undefined;
+    const json = JSON.stringify(data);
+    if (json === lastRemoteJsonRef.current) return undefined;
+    const handle = window.setTimeout(() => {
+      fetch(`${syncUrl}/state`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: data }),
+      }).catch(() => { /* relay offline — local & same-origin sync still work */ });
+    }, 450);
+    return () => window.clearTimeout(handle);
+  }, [data, syncUrl]);
+  useEffect(() => {
+    if (!syncUrl) return undefined;
+    const poll = window.setInterval(() => {
+      fetch(`${syncUrl}/state`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload) => {
+          const incoming = payload?.state;
+          if (!incoming || !Array.isArray(incoming.bookings) || !Array.isArray(incoming.drivers)) return;
+          const json = JSON.stringify(incoming);
+          if (json === JSON.stringify(dataRef.current)) return;
+          lastRemoteJsonRef.current = json;
+          setData((current) => ({ ...normalizeState(incoming), role: current.role }));
+        })
+        .catch(() => { /* relay offline */ });
+    }, 1500);
+    return () => window.clearInterval(poll);
+  }, [syncUrl]);
+
+  /* Registered accounts sync across windows so a sign-up completed in one
+     team-app window is immediately accepted in every other open window. */
+  useEffect(() => {
+    const syncAccounts = (event) => {
+      if (event.key !== AUTH_ACCOUNTS_KEY || !event.newValue) return;
+      try {
+        const parsed = JSON.parse(event.newValue);
+        if (Array.isArray(parsed)) setRegisteredAccounts(parsed);
+      } catch (error) { /* optional cross-window account sync */ }
+    };
+    window.addEventListener('storage', syncAccounts);
+    return () => window.removeEventListener('storage', syncAccounts);
+  }, []);
 
   /* Escape closes the open menu or popover and returns focus to its trigger. */
   useEffect(() => {
@@ -346,7 +419,7 @@ export default function App() {
     persistAuthSession(null);
     setAccountOpen(false);
     setNotificationsOpen(false);
-    setAuthScreen('welcome');
+    setAuthScreen('splash');
   }, [persistAuthSession]);
 
   const resetDemo = useCallback(() => {
@@ -967,7 +1040,7 @@ export default function App() {
         <BrandDefs />
         <AuthFlow
           screen={authScreen}
-          defaultRole={data.role}
+          defaultRole={pinnedRole || data.role}
           registeredAccounts={registeredAccounts}
           onNavigate={setAuthScreen}
           onEnterDemo={enterDemo}
@@ -1023,7 +1096,12 @@ export default function App() {
               <button className="account-scrim" type="button" aria-label="Close account menu" onClick={() => setAccountOpen(false)} />
               <div className="account-menu" role="menu" aria-label="Switch workspace" ref={menuRef} onKeyDown={onMenuKeyDown}>
                 <div className="account-menu-head"><span className="eyebrow">SIGNED IN AS</span><strong>{accountName}</strong></div>
-                {ROLE_ORDER.map((role) => <button
+                {pinnedRole ? (
+                  <div className="account-menu-standalone">
+                    <span className="account-menu-icon"><RoleIcon role={pinnedRole} size={17} /></span>
+                    <span><strong>{WORKSPACE_LABELS[pinnedRole]} · standalone app</strong><small>Live-synced with every other open team window</small></span>
+                  </div>
+                ) : ROLE_ORDER.map((role) => <button
                   key={role}
                   type="button"
                   role="menuitemradio"
@@ -1042,7 +1120,7 @@ export default function App() {
                 </button>
                 <button type="button" role="menuitem" className="account-menu-item account-menu-reset" onClick={signOut}>
                   <span className="account-menu-icon"><LogOut size={16} /></span>
-                  <span><strong>Sign out</strong><small>Return to opening screen</small></span>
+                  <span><strong>Sign out</strong><small>Return to sign in</small></span>
                 </button>
               </div>
             </>}

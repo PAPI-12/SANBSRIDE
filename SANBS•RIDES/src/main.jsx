@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import 'leaflet/dist/leaflet.css';
 import App from './App.jsx';
+import './design-system/tokens.css';
+import './design-system/components.css';
 import './design.css';
 import './mobile.css';
 import './console.css';

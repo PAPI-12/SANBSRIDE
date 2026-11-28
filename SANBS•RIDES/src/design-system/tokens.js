@@ -1,0 +1,450 @@
+/**
+ * SANBS RIDE — Canonical Design System Tokens (JS Single Source of Truth)
+ *
+ * Visual language: Monochrome + SANBS Crimson Red + Stealth Dark Maps
+ * Shared across React primitives, SVG artwork, Leaflet maps, charts, and CSS tokens.
+ */
+
+export const DESIGN_SYSTEM_META = {
+  name: 'SANBS RIDE Design System',
+  version: '2.0.0',
+  codename: 'Carbon & Crimson',
+  theme: 'Monochrome + SANBS Crimson Red',
+  targetViewportMobile: { width: 390, height: 844 },
+  minViewportWidth: 320,
+  minTouchTargetPx: 44,
+};
+
+export const BRAND_ARTWORK = {
+  viewBox: '0 0 280 180',
+  aspectRatio: 280 / 180,
+  markPath:
+    'M 4 128 L 4 86 C 4 58 24 42 56 42 L 66 42 L 66 68 L 56 68 C 39 68 32 75 32 90 L 32 128 Z M 72 46 H 100 V 128 H 72 Z M 164 6 H 192 V 128 H 164 V 121 C 157 127 148 130 138 130 C 118 130 106 112 106 86 C 106 60 118 41 138 41 C 148 41 157 45 164 51 Z M 151 65 C 140 65 134 73 134 86 C 134 99 140 107 151 107 C 159 107 164 100 164 86 C 164 72 159 65 151 65 Z M 274 93 H 226 C 228 103 235 108 244 108 C 251 108 257 105 261 100 L 274 112 C 267 124 255 130 239 130 C 214 130 198 112 198 86 C 198 60 214 41 237 41 C 261 41 275 59 275 85 C 275 88 274 91 274 93 Z M 226 77 H 250 C 249 66 244 60 237 60 C 231 60 227 66 226 77 Z M 4 136 H 26 C 31 151 40 159 52 159 C 64 159 73 151 78 136 H 100 C 93 162 76 178 52 178 C 28 178 11 162 4 136 Z',
+  accentDotPath:
+    'M 86.43 0.2 C 86.64 0.55 86.64 0.55 86.73 0.91 C 86.87 1.36 87.07 1.64 87.34 2.01 C 87.44 2.27 87.53 2.52 87.62 2.78 C 87.75 2.98 87.89 3.19 88.03 3.4 C 88.17 3.68 88.31 3.96 88.45 4.24 C 88.5 4.29 88.5 4.29 88.73 4.58 C 89.14 5.24 89.48 5.88 89.77 6.6 C 89.97 6.9 89.97 6.9 90.19 7.15 C 90.26 7.24 90.32 7.33 90.39 7.43 C 90.7 7.84 91.02 8.24 91.33 8.64 C 92.05 9.57 92.05 9.57 92.33 10.07 C 92.58 10.45 92.87 10.77 93.18 11.11 C 93.36 11.29 93.53 11.5 93.69 11.7 C 94.04 12.13 94.42 12.53 94.81 12.94 C 94.97 13.12 95.15 13.3 95.31 13.5 C 95.5 13.71 95.69 13.91 95.89 14.11 C 95.94 14.2 95.98 14.29 96.03 14.39 C 96.12 14.44 96.21 14.48 96.31 14.53 C 96.47 14.74 96.64 14.94 96.8 15.15 C 96.95 15.32 97.1 15.48 97.25 15.65 C 97.57 15.97 97.84 16.31 98.12 16.68 C 98.28 16.87 98.44 17.05 98.6 17.24 C 99.05 17.75 99.26 18.27 99.51 18.91 C 99.6 19.02 99.69 19.14 99.78 19.25 C 99.92 19.55 100.06 19.86 100.2 20.16 C 100.27 20.26 100.32 20.36 100.38 20.47 C 100.61 20.9 100.71 21.35 100.83 21.83 C 100.88 22 100.95 22.17 101.01 22.35 C 101.22 23.07 101.31 23.79 101.39 24.54 C 101.4 24.66 101.41 24.78 101.43 24.91 C 101.57 26.74 101.59 28.68 100.83 30.38 C 100.74 30.75 100.64 31.13 100.55 31.49 C 100.34 31.77 100.34 31.77 99.99 31.77 C 99.85 31.29 99.83 30.92 99.83 30.42 C 99.83 30.27 99.83 30.12 99.82 29.96 C 99.85 29.55 99.85 29.55 100.13 28.99 C 100.54 27.34 100.19 25.02 99.48 23.49 C 99.3 23.08 99.3 23.08 99.14 22.57 C 98.87 21.65 98.48 20.74 97.84 20.02 C 97.72 19.84 97.6 19.65 97.49 19.46 C 97.28 19.14 97.07 18.84 96.84 18.54 C 96.59 18.21 96.59 18.21 96.32 17.8 C 96.04 17.38 95.73 17 95.41 16.61 C 95.3 16.49 95.2 16.35 95.09 16.22 C 94.79 15.86 94.47 15.51 94.15 15.15 C 94.08 15.07 94.01 14.98 93.93 14.89 C 93.65 14.58 93.37 14.3 93.08 14.02 C 92.65 13.59 92.31 13.18 92 12.65 C 91.89 12.53 91.77 12.42 91.65 12.3 C 91.28 11.9 90.93 11.49 90.61 11.05 C 90.5 10.93 90.38 10.82 90.26 10.7 C 89.98 10.35 89.98 10.35 89.98 10.22 C 89.89 10.17 89.8 10.12 89.7 10.08 C 89.51 9.73 89.33 9.38 89.15 9.03 C 88.71 8.33 88.18 7.7 87.66 7.06 C 87.44 6.77 87.25 6.49 87.06 6.18 C 86.97 6.06 86.88 5.95 86.78 5.83 C 86.73 5.73 86.66 5.62 86.61 5.51 C 86.38 5.11 86.27 5.07 85.81 5.07 C 85.53 5.35 85.53 5.35 85.36 5.69 C 85.18 6.04 85.18 6.04 84.84 6.46 C 84.77 6.58 84.69 6.69 84.62 6.81 C 84.35 7.22 84.35 7.22 83.97 7.66 C 83.59 8.12 83.27 8.59 82.96 9.1 C 82.9 9.21 82.83 9.31 82.76 9.41 C 82.63 9.63 82.51 9.85 82.4 10.08 C 82.24 10.26 82.08 10.45 81.92 10.63 C 81.84 10.72 81.77 10.81 81.69 10.9 C 81.54 11.07 81.38 11.24 81.22 11.4 C 81.05 11.61 80.89 11.82 80.73 12.02 C 80.54 12.25 80.36 12.49 80.18 12.72 C 79.9 13.07 79.9 13.07 79.7 13.38 C 79.48 13.69 79.48 13.69 79.06 14.04 C 78.92 14.2 78.78 14.36 78.64 14.53 C 78.55 14.62 78.46 14.71 78.37 14.81 C 78.03 15.19 77.71 15.58 77.39 15.99 C 77.18 16.24 76.96 16.51 76.74 16.76 C 76.44 17.14 76.18 17.52 75.93 17.93 C 75.86 18.02 75.8 18.11 75.73 18.21 C 75.64 18.39 75.55 18.58 75.45 18.77 C 75.31 18.95 75.17 19.14 75.03 19.32 C 74.91 19.53 74.8 19.74 74.68 19.95 C 74.57 20.11 74.45 20.27 74.34 20.44 C 74.22 20.76 74.1 21.08 73.99 21.41 C 73.93 21.52 73.88 21.63 73.82 21.73 C 73.62 22.16 73.5 22.57 73.38 23.03 C 73.34 23.18 73.3 23.34 73.26 23.5 C 72.7 25.78 72.93 28.52 73.92 30.66 C 73.95 30.73 73.95 30.73 74.09 31.08 C 74.29 31.56 74.5 31.99 74.82 32.4 C 74.96 32.61 75.1 32.82 75.24 33.03 C 75.94 34.04 76.58 34.96 77.6 35.67 C 77.72 35.76 77.83 35.85 77.95 35.94 C 78.16 36.08 78.37 36.22 78.57 36.36 C 78.73 36.47 78.9 36.59 79.06 36.71 C 79.24 36.8 79.43 36.89 79.62 36.99 C 79.74 37.08 79.85 37.17 79.97 37.26 C 80.34 37.4 80.71 37.54 81.08 37.68 C 81.26 37.77 81.45 37.86 81.64 37.96 C 82.92 38.31 84.2 38.53 85.53 38.59 C 85.68 38.59 85.83 38.6 85.98 38.61 C 87.5 38.54 89.05 38.33 90.47 37.75 C 91.15 37.48 91.15 37.48 91.48 37.38 C 91.83 37.25 92.05 37.08 92.35 36.85 C 92.58 36.71 92.81 36.57 93.04 36.43 C 93.15 36.34 93.27 36.25 93.39 36.15 C 93.65 35.99 93.9 35.83 94.15 35.67 C 94.53 35.43 94.81 35.21 95.13 34.9 C 95.27 34.79 95.41 34.67 95.54 34.55 C 95.71 34.3 95.87 34.05 96.03 33.79 C 96.17 33.58 96.31 33.37 96.45 33.16 C 96.54 33.03 96.63 32.89 96.73 32.75 C 96.84 32.61 96.96 32.47 97.07 32.33 C 98.54 29.88 98.5 26.95 97.38 24.39 C 96.96 23.64 96.48 23.07 95.82 22.53 C 95.73 22.41 95.64 22.3 95.54 22.18 C 95.41 22.09 95.27 22 95.13 21.9 C 95.02 21.81 94.9 21.72 94.78 21.62 C 94.46 21.47 94.13 21.34 93.81 21.2 C 93.71 21.15 93.61 21.11 93.52 21.05 C 91.96 20.47 90.2 20.6 88.8 21.48 C 88.7 21.54 88.6 21.59 88.51 21.66 C 88.1 21.93 87.75 22.25 87.41 22.6 C 87.37 22.63 87.37 22.63 87.14 22.81 C 85.64 24.22 85.8 26.3 86.01 28.18 C 86.32 29.31 87.07 30.02 87.89 30.8 C 87.98 30.89 88.07 30.98 88.17 31.08 C 88.22 31.11 88.22 31.11 88.46 31.28 C 88.73 31.49 88.73 31.49 88.8 31.84 C 88.66 32.33 88.55 32.46 88.24 32.82 C 88.12 33.05 88 33.28 87.89 33.51 C 87.75 33.74 87.62 33.98 87.48 34.21 C 87.42 34.33 87.36 34.44 87.3 34.56 C 87.13 34.9 87.13 34.9 86.95 35.19 C 86.78 35.46 86.78 35.46 86.64 35.8 C 86.5 36.08 86.5 36.08 86.3 36.22 C 85.7 36.22 85.59 36.08 85.27 35.58 C 85 35.19 84.69 34.89 84.35 34.55 C 84.28 34.47 84.2 34.39 84.13 34.3 C 83.8 33.92 83.41 33.61 83.02 33.3 C 82.68 33.03 82.68 33.03 82.33 32.68 C 82.12 32.58 81.92 32.49 81.71 32.4 C 81.5 32.26 81.29 32.12 81.08 31.98 C 80.99 31.93 80.9 31.87 80.8 31.81 C 80.34 31.52 79.94 31.19 79.55 30.8 C 79.46 30.73 79.37 30.66 79.27 30.59 C 78.99 30.38 78.99 30.38 78.64 30.03 C 77.88 29.32 77.88 29.32 77.5 29.02 C 77.23 28.75 77.04 28.48 76.84 28.15 C 76.75 28.06 76.67 27.96 76.59 27.86 C 75.68 26.35 75.72 24.2 76.38 22.61 C 76.71 22.08 77.05 21.6 77.46 21.13 C 77.58 20.99 77.69 20.85 77.81 20.72 C 78.32 20.26 78.78 19.98 79.41 19.74 C 79.55 19.65 79.69 19.56 79.83 19.46 C 80.09 19.38 80.36 19.31 80.62 19.24 C 80.76 19.21 80.9 19.17 81.05 19.14 C 82.74 18.75 84.7 19.11 85.95 20.37 C 86.04 20.48 86.13 20.6 86.23 20.72 C 86.95 20.72 86.95 20.72 87.34 20.23 C 87.62 20.1 87.62 20.1 87.95 19.98 C 88.37 19.82 88.74 19.66 89.15 19.46 C 89.4 19.39 89.66 19.33 89.92 19.27 C 89.99 19.26 89.99 19.26 90.33 19.19 C 92.08 18.82 93.97 19.09 95.54 19.95 C 95.73 20.04 95.91 20.13 96.1 20.23 C 96.29 20.41 96.48 20.6 96.66 20.79 C 96.74 20.86 96.83 20.93 96.92 21.01 C 97.14 21.2 97.14 21.2 97.42 21.55 C 97.53 21.66 97.65 21.78 97.77 21.9 C 98.12 22.41 98.4 22.94 98.67 23.5 C 98.73 23.6 98.78 23.71 98.84 23.83 C 99.07 24.4 99.19 24.98 99.31 25.59 C 99.33 25.71 99.36 25.83 99.38 25.94 C 99.67 27.39 99.88 28.77 99.46 30.23 C 99.32 30.88 99.33 31.52 99.44 32.19 C 99.25 32.45 99.07 32.7 98.88 32.96 C 98.73 33.28 98.59 33.6 98.46 33.93 C 98.32 34.21 98.32 34.21 98.05 34.55 C 98 34.65 97.94 34.75 97.89 34.85 C 97.59 35.35 97.21 35.74 96.8 36.15 C 96.71 36.26 96.63 36.36 96.55 36.47 C 95.7 37.52 94.79 38.41 93.53 38.93 C 93.04 39.14 93.04 39.14 92.76 39.34 C 92.35 39.6 91.96 39.75 91.51 39.91 C 91.39 39.96 91.27 40 91.16 40.05 C 90.79 40.17 90.45 40.25 90.08 40.32 C 89 40.54 89 40.54 88.59 40.95 C 87.91 40.99 87.22 40.99 86.53 40.99 C 86.19 40.99 85.84 40.99 85.5 41 C 85.29 41 85.07 41 84.85 41 C 84.65 41 84.45 41 84.25 41 C 83.71 40.95 83.47 40.84 83.03 40.53 C 82.71 40.44 82.39 40.37 82.07 40.3 C 80.86 40.03 79.82 39.68 78.78 39 C 78.65 38.96 78.52 38.91 78.38 38.87 C 77.63 38.62 76.99 38.22 76.42 37.68 C 76.35 37.62 76.35 37.62 76.01 37.31 C 75.51 36.85 75.02 36.38 74.53 35.9 C 74.45 35.82 74.36 35.74 74.28 35.66 C 73.45 34.85 72.97 33.96 72.53 32.89 C 72.49 32.84 72.49 32.84 72.33 32.6 C 71.73 31.68 71.38 30.67 71.07 29.62 C 71.03 29.52 71 29.43 70.96 29.33 C 70.82 28.88 70.77 28.43 70.71 27.96 C 70.68 27.78 70.66 27.61 70.64 27.42 C 70.43 25.64 70.42 23.83 71 22.11 C 71.03 22.01 71.07 21.91 71.1 21.81 C 71.39 20.97 71.75 20.24 72.25 19.5 C 72.47 19.18 72.63 18.84 72.81 18.49 C 73.18 17.78 73.66 17.2 74.2 16.61 C 74.46 16.31 74.71 16.01 74.96 15.71 C 75.21 15.4 75.46 15.1 75.73 14.81 C 75.83 14.68 75.93 14.55 76.03 14.42 C 76.31 14.09 76.6 13.79 76.91 13.48 C 77.25 13.1 77.57 12.71 77.88 12.3 C 78.24 11.86 78.61 11.41 78.99 10.98 C 79.38 10.54 79.69 10.1 79.97 9.59 C 80.11 9.4 80.25 9.21 80.38 9.03 C 80.45 8.93 80.53 8.84 80.6 8.74 C 80.76 8.53 80.92 8.33 81.08 8.13 C 81.15 8.04 81.22 7.95 81.29 7.85 C 81.45 7.64 81.61 7.43 81.78 7.22 C 82.19 6.66 82.49 6.13 82.75 5.49 C 83.04 4.99 83.36 4.51 83.68 4.03 C 83.88 3.72 84.04 3.39 84.21 3.05 C 84.3 2.89 84.39 2.73 84.49 2.57 C 84.56 2.43 84.62 2.3 84.69 2.16 C 84.91 1.73 84.91 1.73 85.09 1.45 C 85.25 1.18 85.25 1.18 85.4 0.74 C 85.61 0.13 85.84 0 86.43 0.2 Z M 78.78 22.25 C 78.71 22.34 78.65 22.44 78.58 22.53 C 77.67 24 77.49 25.47 78.32 27.01 C 78.53 27.36 78.76 27.66 79.06 27.95 C 79.54 28.48 79.54 28.48 79.74 28.75 C 80.04 29.06 80.36 29.21 80.73 29.41 C 80.9 29.54 81.06 29.68 81.22 29.82 C 81.29 29.87 81.29 29.87 81.64 30.1 C 81.8 30.24 81.96 30.38 82.12 30.52 C 82.19 30.58 82.19 30.58 82.54 30.87 C 82.63 30.98 82.72 31.1 82.82 31.22 C 82.89 31.27 82.89 31.27 83.24 31.56 C 83.36 31.68 83.47 31.79 83.59 31.91 C 83.87 32.17 84.16 32.41 84.45 32.64 C 84.94 33.03 85.31 33.42 85.67 33.93 C 85.81 34 85.81 34 86.23 34 C 86.57 33.58 86.57 33.58 86.74 33.28 C 86.92 32.96 86.92 32.96 87.18 32.68 C 87.41 32.4 87.41 32.4 87.41 31.77 C 87.17 31.52 86.93 31.36 86.63 31.18 C 85.95 30.68 85.44 29.97 84.97 29.27 C 84.92 29.18 84.86 29.1 84.79 29.01 C 83.74 27.14 83.91 25.19 84.77 23.29 C 85.05 22.89 85.05 22.89 85.32 22.6 C 85.82 22.02 85.82 22.02 85.74 21.48 C 85.36 21.02 84.95 20.78 84.42 20.51 C 84.28 20.42 84.14 20.33 84 20.23 C 81.85 19.82 79.97 20.33 78.78 22.25 Z',
+  submarkPath:
+    'M 148.66 149.35 L 142.2 149.35 C 141.9 145.97 139.57 144.15 135.74 144.15 C 131.8 144.15 129.47 145.87 129.47 148.49 C 129.47 150.92 131.29 152.03 136.44 153.14 L 139.37 153.8 C 146.54 155.36 149.88 158.29 149.88 163.54 C 149.88 170.21 144.62 174.1 136.24 174.1 C 127.45 174.1 122.2 169.91 122 162.63 L 128.56 162.63 C 128.77 166.67 131.7 168.8 136.44 168.8 C 140.58 168.8 143.21 166.98 143.21 164.15 C 143.21 161.52 141.29 160.31 135.94 159.1 L 133.01 158.44 C 126.44 156.98 123.01 154.05 123.01 148.9 C 123.01 142.74 128.16 139 135.84 139 C 143.72 139 148.36 142.84 148.66 149.35 Z M 161.49 139.5 L 169.77 139.5 L 181.29 173.34 L 174.32 173.34 L 171.69 166.07 L 159.17 166.07 L 156.54 173.34 L 149.78 173.34 Z M 165.53 146.68 L 160.99 160.51 L 169.87 160.51 Z M 183.61 139.5 L 190.38 139.5 L 205.02 163.64 L 205.02 139.5 L 211.38 139.5 L 211.38 173.34 L 204.72 173.34 L 189.97 149 L 189.97 173.34 L 183.61 173.34 Z M 216.44 139.5 L 232.19 139.5 C 238.66 139.5 242.39 142.74 242.39 147.99 C 242.39 151.63 240.37 154.25 236.94 155.46 C 241.08 156.68 243.4 159.6 243.4 163.95 C 243.4 169.81 239.06 173.34 231.99 173.34 L 216.44 173.34 Z M 223 144.86 L 223 153.44 L 231.08 153.44 C 234.21 153.44 235.83 151.83 235.83 149.1 C 235.83 146.37 234.21 144.86 231.08 144.86 Z M 223 158.59 L 223 167.99 L 231.59 167.99 C 235.02 167.99 236.74 166.27 236.74 163.24 C 236.74 160.21 235.02 158.59 231.59 158.59 Z M 272.39 149.35 L 265.93 149.35 C 265.62 145.97 263.3 144.15 259.46 144.15 C 255.52 144.15 253.2 145.87 253.2 148.49 C 253.2 150.92 255.02 152.03 260.17 153.14 L 263.1 153.8 C 270.27 155.36 273.6 158.29 273.6 163.54 C 273.6 170.21 268.35 174.1 259.97 174.1 C 251.18 174.1 245.93 169.91 245.72 162.63 L 252.29 162.63 C 252.49 166.67 255.42 168.8 260.17 168.8 C 264.31 168.8 266.94 166.98 266.94 164.15 C 266.94 161.52 265.02 160.31 259.66 159.1 L 256.73 158.44 C 250.17 156.98 246.74 154.05 246.74 148.9 C 246.74 142.74 251.89 139 259.56 139 C 267.44 139 272.09 142.84 272.39 149.35 Z',
+  dropPath: 'M12 1C12 1 2.5 12.5 2.5 19a9.5 9.5 0 0 0 19 0C21.5 12.5 12 1 12 1Z',
+  ecgPath: 'M0 14h46l8-10 9 20 8-16 6 6h103',
+  files: [
+    '/brand/sanbs-ride-mark.svg',
+    '/brand/sanbs-ride-mark-red.svg',
+    '/brand/sanbs-ride-mark-ink.svg',
+    '/brand/sanbs-ride-mark-white.svg',
+    '/brand/sanbs-ride-icon.svg',
+    '/brand/apple-touch-icon.png',
+    '/brand/sanbs-ride-logo-redesign.png',
+  ],
+};
+
+export const COLORS = {
+  // Ink & Carbon
+  ink: '#0A0B0D',
+  ink2: '#181A20',
+  ink3: '#2E323B',
+  carbon: '#0A0B0D',
+  carbon2: '#14161B',
+  carbon3: '#1F2229',
+  carbonLine: '#262A33',
+  muted: '#5A606D',
+  muted2: '#646B78',
+  mutedOnDark: '#9CA3AF',
+  mutedOnDark2: '#B6BDC9',
+
+  // Neutral Surfaces & Hairlines
+  canvas: '#ECEEF2',
+  canvas2: '#E2E5EB',
+  paper: '#FFFFFF',
+  paper2: '#F3F4F6',
+  paper3: '#EBEDF0',
+  paper4: '#F6F7F8',
+  line: '#E6E8EC',
+  line2: '#D4D7DF',
+  white: '#FFFFFF',
+
+  // Single Bold Brand Accent — SANBS Crimson Red
+  accent: '#D42127',
+  accentDark: '#B0171D',
+  accentDeep: '#7C0F13',
+  accentBright: '#FF4D53',
+  accentRoute: '#FF3B42',
+  accentSoft: '#FDECEE',
+  accentGhost: '#FFF5F5',
+  accentBorder: '#F0C4C6',
+  accentInk: '#FFFFFF',
+
+  // Semantic Statuses
+  ok: '#0F7B4F',
+  okBright: '#34D399',
+  okSoft: '#E6F4EC',
+  warn: '#8A5A00',
+  warnBright: '#F59E0B',
+  warnSoft: '#FDF3DC',
+  info: '#1B5A8F',
+  infoSoft: '#E8F1F9',
+  violet: '#543680',
+  violetSoft: '#EFEAF8',
+  danger: '#A81C13',
+
+  // Stealth Map Surfaces
+  stealthBg: '#0F1115',
+  stealthBlock: '#161920',
+  stealthBlockStroke: '#1D212B',
+  stealthRoad: '#1E222C',
+  stealthRoadEdge: '#282D38',
+  stealthRouteBase: '#2D323E',
+  stealthPark: '#141A18',
+};
+
+export const COLOR_GROUPS = [
+  {
+    id: 'monochrome',
+    title: 'Monochrome & Carbon',
+    description: 'High-contrast ink and architectural carbon surfaces for headers, sidebars, telemetry pills, and dark overlays.',
+    tokens: [
+      { name: 'Carbon / Ink', cssVar: '--carbon', value: COLORS.carbon, textOn: '#FFFFFF', role: 'Primary dark cards, global header, sidebars, phone bezel' },
+      { name: 'Carbon 2', cssVar: '--carbon-2', value: COLORS.carbon2, textOn: '#FFFFFF', role: 'Nested cards and triggers on carbon backgrounds' },
+      { name: 'Carbon 3', cssVar: '--carbon-3', value: COLORS.carbon3, textOn: '#FFFFFF', role: 'Hover and active states inside dark surfaces' },
+      { name: 'Carbon Line', cssVar: '--carbon-line', value: COLORS.carbonLine, textOn: '#FFFFFF', role: '1px dividers and subtle card borders on dark surfaces' },
+      { name: 'Ink 2', cssVar: '--ink-2', value: COLORS.ink2, textOn: '#FFFFFF', role: 'Strong secondary headings and high-contrast copy' },
+      { name: 'Muted', cssVar: '--muted', value: COLORS.muted, textOn: '#FFFFFF', role: 'Secondary descriptions, metadata, form labels' },
+      { name: 'Muted 2', cssVar: '--muted-2', value: COLORS.muted2, textOn: '#FFFFFF', role: 'Supporting timestamps and captions (AA-safe on #F3F4F6)' },
+      { name: 'Muted on Dark', cssVar: '--muted-on-dark', value: COLORS.mutedOnDark, textOn: '#0A0B0D', role: 'Secondary labels on carbon surfaces (7.9:1 on #0A0B0D)' },
+    ],
+  },
+  {
+    id: 'surfaces',
+    title: 'Neutral Surfaces & Hairlines',
+    description: 'Crisp stark white reading surfaces paired with cool neutral gray stages and understated borders.',
+    tokens: [
+      { name: 'Paper (Pure White)', cssVar: '--paper', value: COLORS.paper, textOn: '#0A0B0D', role: 'Primary cards, mobile app viewport, modal & drawer bodies' },
+      { name: 'Paper 2 (Cool Gray)', cssVar: '--paper-2', value: COLORS.paper2, textOn: '#0A0B0D', role: 'Input fields, secondary tiles, soft drawer headers' },
+      { name: 'Paper 4 (Soft Tint)', cssVar: '--paper-4', value: COLORS.paper4, textOn: '#0A0B0D', role: 'Receipt cards, list items, quiet shortcut rows' },
+      { name: 'Canvas Stage', cssVar: '--canvas', value: COLORS.canvas, textOn: '#0A0B0D', role: 'App stage backdrop behind consoles and phone frames' },
+      { name: 'Line Hairline', cssVar: '--line', value: COLORS.line, textOn: '#0A0B0D', role: 'Table rows, card outlines, modal & drawer dividers' },
+      { name: 'Line Strong', cssVar: '--line-2', value: COLORS.line2, textOn: '#0A0B0D', role: 'Secondary button borders and inactive radio/check rings' },
+    ],
+  },
+  {
+    id: 'accent',
+    title: 'SANBS Crimson Red Accent',
+    description: 'Used as the single bold brand accent for primary CTAs, active route strokes, brand mark, and critical journey markers.',
+    tokens: [
+      { name: 'SANBS Crimson', cssVar: '--accent', value: COLORS.accent, textOn: '#FFFFFF', role: 'Primary buttons, active dock disc, brand mark, focus rings' },
+      { name: 'Crimson Dark', cssVar: '--accent-dark', value: COLORS.accentDark, textOn: '#FFFFFF', role: 'Hover/pressed states and high-contrast red labels on light' },
+      { name: 'Crimson Deep', cssVar: '--accent-deep', value: COLORS.accentDeep, textOn: '#FFFFFF', role: 'Validation error copy on tinted red backgrounds' },
+      { name: 'Crimson Bright', cssVar: '--accent-bright', value: COLORS.accentBright, textOn: '#0A0B0D', role: 'Key metrics, ECG trace & interactive highlights on #0A0B0D' },
+      { name: 'Route Crimson', cssVar: '--accent-route', value: COLORS.accentRoute, textOn: '#FFFFFF', role: 'Active travelled route line & halo on stealth dark maps' },
+      { name: 'Crimson Soft', cssVar: '--accent-soft', value: COLORS.accentSoft, textOn: '#7C0F13', role: 'Alert pills, icon badges, error surface tints' },
+    ],
+  },
+  {
+    id: 'semantic',
+    title: 'Semantic & Status Palette',
+    description: 'Strictly functional colors paired with accessible surface tints for journey states, availability, and validation.',
+    tokens: [
+      { name: 'Success / Ready', cssVar: '--ok', value: COLORS.ok, textOn: '#FFFFFF', role: 'Verified pickups, journey complete, POPIA assurance notes' },
+      { name: 'Success Live Dot', cssVar: '--ok-bright', value: COLORS.okBright, textOn: '#0A0B0D', role: 'Online driver beacon and active status indicators on dark' },
+      { name: 'Success Soft', cssVar: '--ok-soft', value: COLORS.okSoft, textOn: '#0F7B4F', role: 'Completion badges and ready-for-return banners' },
+      { name: 'Warning / Attention', cssVar: '--warn', value: COLORS.warn, textOn: '#FFFFFF', role: 'Awaiting assignment/authorisation statuses and pickup alerts' },
+      { name: 'Warning Soft', cssVar: '--warn-soft', value: COLORS.warnSoft, textOn: '#8A5A00', role: 'Amber status chip and pickup instruction backgrounds' },
+      { name: 'Info / Dispatch', cssVar: '--info', value: COLORS.info, textOn: '#FFFFFF', role: 'Staff-assisted origin tags and assigned driver states' },
+      { name: 'Info Soft', cssVar: '--info-soft', value: COLORS.infoSoft, textOn: '#1B5A8F', role: 'Blue status chip and staff-assisted tag background' },
+      { name: 'In Transit (Violet)', cssVar: '--violet', value: COLORS.violet, textOn: '#FFFFFF', role: 'Donor onboard, driver arrived, returning home badges' },
+      { name: 'Violet Soft', cssVar: '--violet-soft', value: COLORS.violetSoft, textOn: '#543680', role: 'Transit status chip background' },
+    ],
+  },
+  {
+    id: 'stealth',
+    title: 'Stealth Dark Map Surface',
+    description: 'Monochrome inverted OpenStreetMap tiles over a 48px dark architectural grid so white origin beacons and crimson routes stand out cleanly.',
+    tokens: [
+      { name: 'Stealth Void', cssVar: '--stealth-bg', value: COLORS.stealthBg, textOn: '#FFFFFF', role: 'Base canvas of all Leaflet maps and SVG route previews' },
+      { name: 'Stealth Block', cssVar: '--stealth-block', value: COLORS.stealthBlock, textOn: '#FFFFFF', role: 'City block fills in schematic vector RouteMap' },
+      { name: 'Stealth Road', cssVar: '--stealth-road', value: COLORS.stealthRoad, textOn: '#FFFFFF', role: 'Primary road lines in dark mode vector maps' },
+      { name: 'Route Track Base', cssVar: '--stealth-route-base', value: COLORS.stealthRouteBase, textOn: '#FFFFFF', role: 'Untravelled route polyline beneath active crimson progress' },
+    ],
+  },
+];
+
+export const MAP_PALETTE = {
+  stealth: {
+    background: COLORS.stealthBg,
+    blocks: COLORS.stealthBlock,
+    blockStroke: COLORS.stealthBlockStroke,
+    road: COLORS.stealthRoad,
+    roadEdge: COLORS.stealthRoadEdge,
+    routeBase: COLORS.stealthRouteBase,
+    routeHalo: COLORS.accentRoute,
+    route: COLORS.accentRoute,
+    start: COLORS.white,
+    startRing: COLORS.stealthBg,
+    end: COLORS.accent,
+    vehicle: COLORS.white,
+    vehicleStroke: COLORS.carbon,
+    label: '#181B22',
+    labelText: '#F3F4F6',
+    streetLabel: '#555D6E',
+    park: COLORS.stealthPark,
+  },
+  light: {
+    background: COLORS.paper2,
+    blocks: '#E8EAEE',
+    blockStroke: '#DCE0E6',
+    road: COLORS.white,
+    roadEdge: '#D1D5DB',
+    routeBase: COLORS.mutedOnDark,
+    routeHalo: COLORS.accent,
+    route: COLORS.accent,
+    start: COLORS.white,
+    startRing: COLORS.carbon,
+    end: COLORS.accent,
+    vehicle: COLORS.carbon,
+    vehicleStroke: COLORS.white,
+    label: COLORS.white,
+    labelText: COLORS.carbon,
+    streetLabel: '#6B7280',
+    park: '#E2E9E4',
+  },
+  pins: {
+    centreSelectedFill: COLORS.accent,
+    centreSelectedRing: COLORS.white,
+    centreIdleFill: '#262A34',
+    centreIdleRing: '#D1D5DB',
+    centreIdleDot: '#6B7280',
+    dropFill: COLORS.ink2,
+    dropLiquid: COLORS.accent,
+    dropStroke: COLORS.white,
+    navHaloBorder: COLORS.accent,
+    navArrowFill: COLORS.carbon,
+  },
+  chart: {
+    darkGrid: 'rgba(255, 255, 255, .1)',
+    darkLine: COLORS.accentBright,
+    darkPointFill: COLORS.accentBright,
+    darkPointStroke: COLORS.carbon,
+    lightGrid: '#E5E7EB',
+    lightLine: COLORS.accent,
+    lightPointFill: COLORS.accent,
+    lightPointStroke: COLORS.paper4,
+  },
+};
+
+export const TYPOGRAPHY = {
+  families: [
+    {
+      id: 'display',
+      name: 'Manrope',
+      cssVar: '--display',
+      stack: "'Manrope', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
+      weights: ['700 Bold', '800 ExtraBold'],
+      usage: 'Display headlines, greeting banners, KPI figures, mobile sheet titles, wordmark',
+      tracking: '-0.04em to -0.02em',
+    },
+    {
+      id: 'font',
+      name: 'Inter',
+      cssVar: '--font',
+      stack: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      weights: ['400 Regular', '500 Medium', '600 SemiBold', '700 Bold'],
+      usage: 'Body prose, form inputs, navigation labels, tables, buttons, notifications',
+      tracking: '-0.015em to 0em',
+    },
+    {
+      id: 'mono',
+      name: 'JetBrains Mono',
+      cssVar: '--mono',
+      stack: "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace",
+      weights: ['500 Medium', '600 SemiBold', '700 Bold'],
+      usage: 'Booking references (SR-261127-008), uppercase micro kickers, telemetry labels, breadcrumbs',
+      tracking: '0.07em to 0.24em',
+    },
+  ],
+  scale: [
+    { token: '--fs-3xl', sizePx: 36, lineHeight: '1.05', weight: 800, family: 'display', tracking: '-0.045em', role: 'Splash wordmark & desktop hero greeting' },
+    { token: '--fs-2xl', sizePx: 30, lineHeight: '1.08', weight: 800, family: 'display', tracking: '-0.04em', role: 'Mobile greeting (`Hi Thabo`), console page H1' },
+    { token: '--fs-xl', sizePx: 24, lineHeight: '1.15', weight: 800, family: 'display', tracking: '-0.035em', role: 'Auth heading, drawer H2, nav ETA metric' },
+    { token: '--fs-lg', sizePx: 19, lineHeight: '1.18', weight: 700, family: 'display', tracking: '-0.03em', role: 'Section H2, modal titles, telemetry KPI numbers' },
+    { token: '--fs-md', sizePx: 16, lineHeight: '1.30', weight: 700, family: 'display', tracking: '-0.02em', role: 'Card H3, trip receipt route, mobile input floor' },
+    { token: '--fs-body', sizePx: 15, lineHeight: '1.50', weight: 400, family: 'font', tracking: '0em', role: 'Default body prose and form copy' },
+    { token: '--fs-sm', sizePx: 13, lineHeight: '1.45', weight: 500, family: 'font', tracking: '-0.01em', role: 'Buttons, table cells, secondary descriptions' },
+    { token: '--fs-caption', sizePx: 12, lineHeight: '1.40', weight: 600, family: 'font', tracking: '0em', role: 'Field labels, helper text, metadata rows' },
+    { token: '--fs-label', sizePx: 11, lineHeight: '1.35', weight: 700, family: 'mono', tracking: '0.09em', role: 'Uppercase micro kickers, status pills, metric headings (minimum text size)' },
+  ],
+};
+
+export const SPACING = [
+  { token: '--sp-1', px: 4, rem: '0.25rem', usage: 'Tight icon gaps, hairline stack spacing' },
+  { token: '--sp-2', px: 8, rem: '0.5rem', usage: 'Button icon gap, compact list spacing' },
+  { token: '--sp-3', px: 12, rem: '0.75rem', usage: 'Bento grid gap, pill vertical padding, choice gap' },
+  { token: '--sp-4', px: 16, rem: '1rem', usage: 'Card internal padding, mobile section gap' },
+  { token: '--sp-5', px: 20, rem: '1.25rem', usage: 'Mobile page horizontal inset, card comfort padding' },
+  { token: '--sp-6', px: 24, rem: '1.5rem', usage: 'Console page gutter, modal body padding' },
+  { token: '--sp-7', px: 28, rem: '1.75rem', usage: 'Auth card padding, drawer/hero spacing' },
+  { token: '--sp-8', px: 32, rem: '2rem', usage: 'Section separation in wide studio layouts' },
+  { token: '--sp-10', px: 40, rem: '2.5rem', usage: 'Empty state padding, large desktop gutter' },
+  { token: '--sp-12', px: 48, rem: '3rem', usage: 'Stealth grid cell size, icon disc scale' },
+  { token: '--sp-16', px: 64, rem: '4rem', usage: 'Bottom sheet collapsed height, large stage inset' },
+];
+
+export const RADII = [
+  { token: '--r-2xs', value: '8px', usage: 'Attribution chips, compact tags' },
+  { token: '--r-xs', value: '12px', usage: 'Recent activity list rows, subtle highlights' },
+  { token: '--r-sm', value: '16px', usage: 'Alert banners, nested centre options, compact tiles' },
+  { token: '--r-md', value: '20px', usage: 'Inputs, profile pills, queue cards, shortcuts' },
+  { token: '--r-lg', value: '24px', usage: 'Bento tiles, dark carbon pills, table wrappers' },
+  { token: '--r-xl', value: '28px', usage: 'Hero telemetry cards, bottom sheets, route maps' },
+  { token: '--r-2xl', value: '34px', usage: 'Large modal dialog frames' },
+  { token: '--r-device', value: '46px', usage: '390×844 mobile phone preview bezel' },
+  { token: '--pill', value: '999px', usage: 'Primary CTAs, status chips, circular docks, tabs' },
+];
+
+export const ELEVATION = [
+  { token: '--sh-1', value: '0 1px 2px rgba(10, 11, 13, .05), 0 1px 1px rgba(10, 11, 13, .03)', usage: 'Subtle white KPI tiles & active segmented controls' },
+  { token: '--sh-2', value: '0 6px 18px rgba(10, 11, 13, .07), 0 1px 3px rgba(10, 11, 13, .04)', usage: 'Map floating pills, controls & lightweight overlays' },
+  { token: '--sh-3', value: '0 18px 46px rgba(10, 11, 13, .14), 0 2px 10px rgba(10, 11, 13, .06)', usage: 'Dropdown panels, stealth map preview cards' },
+  { token: '--sh-ink', value: '0 18px 44px rgba(10, 11, 13, .28)', usage: 'Carbon telemetry heroes, account menus, toasts' },
+  { token: '--sh-accent', value: '0 14px 28px rgba(212, 33, 39, .28)', usage: 'Primary crimson CTA banners & active dock discs' },
+  { token: '--sh-dock', value: '0 12px 32px rgba(10, 11, 13, .10)', usage: 'Floating 4-button circular mobile dock' },
+];
+
+export const MOTION = {
+  durations: [
+    { token: '--dur-instant', value: '120ms', usage: 'Button press scale, table row hover' },
+    { token: '--dur-fast', value: '160ms', usage: 'Dropdown chevrons, popover entrance, tab switches' },
+    { token: '--dur-base', value: '240ms', usage: 'Drawer slide, map pan/re-center transitions' },
+    { token: '--dur-slow', value: '380ms', usage: 'Bottom sheet expand/collapse, auth card entrance' },
+    { token: '--dur-splash', value: '2100ms', usage: 'Opening animated logo splash hold duration' },
+  ],
+  easings: [
+    { token: '--ease-standard', value: 'cubic-bezier(0.2, 0.8, 0.2, 1)', usage: 'Sheets, drawers, layout expansions' },
+    { token: '--ease-out', value: 'cubic-bezier(0.22, 1, 0.36, 1)', usage: 'Splash emblem entrance, ECG stroke draw, auth card reveal' },
+  ],
+  keyframes: [
+    { name: 'splash-heartbeat', duration: '1.5s', description: 'Double-beat systole/diastole pulse on the Crimson brand disc' },
+    { name: 'splash-ring-pulse', duration: '2.0s', description: 'Expanding concentric radar rings echoing each beat' },
+    { name: 'splash-ecg-draw', duration: '1.4s', description: 'Vector stroke-dashoffset trace across the SANBS QRS complex' },
+    { name: 'splash-progress-fill', duration: '2.0s', description: 'GPU-composited scaleX(0→1) splash timer track' },
+  ],
+};
+
+export const Z_INDEX = [
+  { token: '--z-header', value: 60, layer: 'Sticky global carbon shell bar' },
+  { token: '--z-scrim', value: 70, layer: 'Menu / notification dismissal scrims' },
+  { token: '--z-menu', value: 80, layer: 'Account workspace switcher menu' },
+  { token: '--z-popover', value: 200, layer: 'Notifications popover' },
+  { token: '--z-drawer', value: 280, layer: 'Right-hand Journey Detail drawer' },
+  { token: '--z-modal', value: 300, layer: 'Modal dialogs & staff-assisted booking' },
+  { token: '--z-toast', value: 400, layer: 'Centered carbon status toast pill' },
+  { token: '--z-sheet', value: 1100, layer: 'Mobile Journey expandable sheet & map banner' },
+  { token: '--z-nav-overlay', value: 5000, layer: 'Full-viewport turn-by-turn driver navigation' },
+];
+
+export const AVATAR_TONES = [
+  { id: 'red', label: 'SANBS Employed', hex: COLORS.accentDark },
+  { id: 'blue', label: 'Fleet Reserve', hex: '#1F456E' },
+  { id: 'plum', label: 'Independent Approved', hex: '#4F3A65' },
+  { id: 'green', label: 'Transport Partner', hex: '#165B43' },
+];
+
+export const STATUS_CHIP_SPECS = [
+  { key: 'awaiting_assignment', tone: 'amber', label: 'Awaiting driver', leg: 'Outbound' },
+  { key: 'driver_assigned', tone: 'blue', label: 'Driver assigned', leg: 'Outbound' },
+  { key: 'driver_on_the_way', tone: 'blue', label: 'Driver on the way', leg: 'Outbound' },
+  { key: 'driver_arrived', tone: 'violet', label: 'Driver at pickup', leg: 'Outbound' },
+  { key: 'donor_picked_up', tone: 'violet', label: 'Donor on board', leg: 'Outbound' },
+  { key: 'awaiting_return_authorisation', tone: 'green', label: 'Donation in progress', leg: 'Centre' },
+  { key: 'return_waiting_authorisation', tone: 'amber', label: 'Awaiting SANBS authorisation', leg: 'Return' },
+  { key: 'return_awaiting_dispatch', tone: 'amber', label: 'Return ready to dispatch', leg: 'Return' },
+  { key: 'return_driver_assigned', tone: 'blue', label: 'Return driver assigned', leg: 'Return' },
+  { key: 'return_driver_on_the_way', tone: 'blue', label: 'Return driver on the way', leg: 'Return' },
+  { key: 'return_driver_arrived', tone: 'violet', label: 'Return driver at pickup', leg: 'Return' },
+  { key: 'donor_on_the_way_home', tone: 'violet', label: 'Returning home', leg: 'Return' },
+  { key: 'completed', tone: 'green', label: 'Journey completed', leg: 'Final' },
+  { key: 'cancelled', tone: 'grey', label: 'Cancelled', leg: 'Final' },
+];
+
+export const ACCESSIBILITY_RULES = [
+  {
+    id: 'contrast',
+    title: 'WCAG 2.2 AA Contrast Enforced',
+    metric: '>= 4.5:1',
+    detail: 'All body text, muted metadata (#5A606D / #646B78 on light, #9CA3AF on #0A0B0D), crimson pills (#FFFFFF on #D42127 = 5.02:1), and semantic status chips meet or exceed 4.5:1 contrast.',
+  },
+  {
+    id: 'touch-targets',
+    title: '44 × 44 px Minimum Touch Targets',
+    metric: '44 × 44 px',
+    detail: 'On coarse pointers and viewports <= 760px, polish.css enforces 44px minimum hit areas across buttons, circular dock icons (52px), close triggers, and nav controls.',
+  },
+  {
+    id: 'focus-rings',
+    title: 'Adaptive Dual Focus Rings',
+    metric: '2px solid',
+    detail: 'Light surfaces display a #D42127 crimson focus outline; carbon and stealth dark surfaces flip automatically to high-visibility #FFFFFF focus outlines.',
+  },
+  {
+    id: 'mobile-input-zoom',
+    title: '16px Touch Input Floor',
+    metric: '>= 16 px',
+    detail: 'Auth and booking inputs scale up to 16px on touch / <= 760px viewports to prevent Safari iOS auto-zoom and horizontal panning.',
+  },
+  {
+    id: 'reduced-motion',
+    title: 'Prefers-Reduced-Motion Parity',
+    metric: '0.01 ms',
+    detail: 'All pulse loops, splash beats, ECG stroke animations, and sheet transitions collapse gracefully when prefers-reduced-motion: reduce is active.',
+  },
+  {
+    id: 'popia-privacy',
+    title: 'POPIA Operational Scope Only',
+    metric: '0 clinical fields',
+    detail: 'Transport interfaces display pickup, schedule, vehicle, and readiness flags only — clinical or donation test details are excluded from every UI pattern.',
+  },
+];
+
+export const CONTRAST_PAIRS = [
+  { id: 'ink-paper', label: 'Primary Ink on White Paper', fg: COLORS.ink, bg: COLORS.paper, minimum: 4.5 },
+  { id: 'ink-paper2', label: 'Primary Ink on Cool Gray', fg: COLORS.ink, bg: COLORS.paper2, minimum: 4.5 },
+  { id: 'muted-paper', label: 'Muted Ink on White Paper', fg: COLORS.muted, bg: COLORS.paper, minimum: 4.5 },
+  { id: 'muted2-paper2', label: 'Muted 2 Ink on Cool Gray', fg: COLORS.muted2, bg: COLORS.paper2, minimum: 4.5 },
+  { id: 'white-carbon', label: 'Pure White on Carbon', fg: COLORS.white, bg: COLORS.carbon, minimum: 4.5 },
+  { id: 'mutedDark-carbon', label: 'Muted Dark Ink on Carbon', fg: COLORS.mutedOnDark, bg: COLORS.carbon, minimum: 4.5 },
+  { id: 'white-accent', label: 'Pure White on SANBS Crimson', fg: COLORS.white, bg: COLORS.accent, minimum: 4.5 },
+  { id: 'accent-paper', label: 'SANBS Crimson on White Paper', fg: COLORS.accent, bg: COLORS.paper, minimum: 4.5 },
+  { id: 'accent-paper2', label: 'SANBS Crimson on Cool Gray', fg: COLORS.accent, bg: COLORS.paper2, minimum: 4.5 },
+  { id: 'accentBright-carbon', label: 'Crimson Bright on Carbon', fg: COLORS.accentBright, bg: COLORS.carbon, minimum: 4.5 },
+  { id: 'accentDeep-ghost', label: 'Crimson Deep on Error Ghost', fg: COLORS.accentDeep, bg: COLORS.accentGhost, minimum: 4.5 },
+  { id: 'ok-soft', label: 'Success Text on Success Tint', fg: COLORS.ok, bg: COLORS.okSoft, minimum: 4.5 },
+  { id: 'warn-soft', label: 'Warning Text on Warning Tint', fg: COLORS.warn, bg: COLORS.warnSoft, minimum: 4.5 },
+  { id: 'info-soft', label: 'Info Text on Info Tint', fg: COLORS.info, bg: COLORS.infoSoft, minimum: 4.5 },
+  { id: 'violet-soft', label: 'Transit Text on Violet Tint', fg: COLORS.violet, bg: COLORS.violetSoft, minimum: 4.5 },
+];
+
+function hexToRgb(hex) {
+  const clean = String(hex).replace('#', '').trim();
+  const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
+  const num = Number.parseInt(full, 16);
+  return {
+    r: (num >> 16) & 255,
+    g: (num >> 8) & 255,
+    b: num & 255,
+  };
+}
+
+export function relativeLuminance(hex) {
+  const { r, g, b } = hexToRgb(hex);
+  const channel = (val) => {
+    const srgb = val / 255;
+    return srgb <= 0.03928 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+}
+
+export function contrastRatio(foregroundHex, backgroundHex) {
+  const l1 = relativeLuminance(foregroundHex);
+  const l2 = relativeLuminance(backgroundHex);
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
