@@ -1,0 +1,17 @@
+{
+  "name": "sanbs-ride-deployments",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Deployment entry points for the four standalone SANBS RIDE role apps. The prototype itself lives in SANBS•RIDES/ — see deploy/DEPLOY_ROLES.md.",
+  "scripts": {
+    "build:app": "cd \"SANBS•RIDES\" && npm ci && npm run build",
+    "deploy:donor": "npm run build:app && cd \"SANBS•RIDES\" && npm run package:donor",
+    "deploy:driver": "npm run build:app && cd \"SANBS•RIDES\" && npm run package:driver",
+    "deploy:staff": "npm run build:app && cd \"SANBS•RIDES\" && npm run package:staff",
+    "deploy:ops": "npm run build:app && cd \"SANBS•RIDES\" && npm run package:ops",
+    "deploy:all": "npm run build:app && cd \"SANBS•RIDES\" && npm run package:all",
+    "relay": "node deploy/sync-server.mjs",
+    "verify": "cd \"SANBS•RIDES\" && npm run brand:verify && npm test && npm run check:ssr",
+    "publish:repos": "bash deploy/publish-repos.sh"
+  }
+}

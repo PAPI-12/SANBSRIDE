@@ -33,17 +33,34 @@ resolves, the role is pinned, and no root-absolute path survived).
 
 ## Route A — one repository, four host projects (fastest)
 
-Create one project per role on the same host. Every package is path-relative, so
-sub-directory hosting works too.
+Create one project per role from this repository. The root `package.json` gives
+every host a one-line build command per role, and every package is path-relative,
+so sub-directory hosting works too.
 
-| Host | Build command | Publish directory |
+| Role | Build command (repository root) | Output / publish directory |
 | --- | --- | --- |
-| Netlify | `cd SANBS•RIDES && npm ci && npm run build && npm run package:donor` | `team-apps/donor` |
-| Vercel | same, with `--role donor` | `team-apps/donor` |
-| Cloudflare Pages | same | `team-apps/donor` |
+| Donor | `npm run deploy:donor` | `team-apps/donor` |
+| Driver | `npm run deploy:driver` | `team-apps/driver` |
+| Centre staff | `npm run deploy:staff` | `team-apps/staff` |
+| Transport ops | `npm run deploy:ops` | `team-apps/ops` |
 
-Repeat with `driver`, `staff`, `ops` for the other three projects. Each project
-gets its own URL, its own deploy history and its own rollbacks.
+Each `deploy:<role>` script installs and builds the prototype once, then packages
+and verifies that single role — nothing else is published.
+
+**Vercel** (one project per role): Settings → General → Root Directory `./`,
+Framework Preset `Other`, Build Command from the table above, Output Directory
+from the table above. Leave the Install Command empty — `deploy:<role>` runs
+`npm ci` inside `SANBS•RIDES` itself.
+
+**Netlify / Cloudflare Pages**: same two fields (build command + publish
+directory) in the site's build settings.
+
+> If a Vercel project reports *Deployment has failed* or *Deployment was
+> blocked*, its Root Directory is pointing at a folder with no build entry point.
+> The app lives in `SANBS•RIDES/`, not at the repository root, so either use the
+> root `deploy:<role>` commands above (Root Directory `./`) or set Root Directory
+> to `SANBS•RIDES` with Build Command `npm run build` — which deploys the whole
+> prototype as one app instead of a single role.
 
 ## Route B — GitHub Actions in this repository
 
